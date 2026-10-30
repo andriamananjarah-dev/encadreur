@@ -18,6 +18,7 @@
   --bg:#0f0f10; --stage:#08080a; --panel:#161618; --panel2:#222226; --panel3:#2c2c31; --line:#2a2a2f;
   --txt:#f3f1ed; --mut:#9b9892; --dim:#6b6964; --acc:#f2a93b; --acc-ink:#1d1305;
   --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --vgap:0px; --sab:max(0px,calc(env(safe-area-inset-bottom,0px) - var(--vgap)));
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -78,7 +79,8 @@ body.comparing .cmp-badge{display:block}
 .panel{background:var(--panel);border-top:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
 .body{min-width:0;height:clamp(196px,31dvh,330px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 16px;overscroll-behavior:contain}
 .pane{display:none}.pane.on{display:block}
-.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding-bottom:var(--safe-b);background:#0b0b0c}
+.panel.compact .body{height:auto} /* onglet Cadres : le panneau épouse son contenu, la photo gagne la place */
+.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding-bottom:var(--sab);background:#000}
 .nav button{padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:550;color:var(--mut)}
 .nav button svg{width:22px;height:22px}
 .nav button.on{color:var(--acc)}
@@ -161,7 +163,7 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
 .callout{background:#1d1a14;border:1px solid #3a2f1c;color:#e6cfa6;border-radius:12px;padding:10px 12px;font-size:12.5px;margin-top:12px}
 
 /* modale résultat */
-.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + var(--safe-b))}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + var(--sab))}
 .modal.open{display:flex}
 .sheet{width:100%;max-width:540px;max-height:92dvh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px}
 .sheet h2{margin:0 0 4px;font-size:17px}
@@ -177,6 +179,19 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
   padding:9px 14px;border-radius:12px;font-size:13.5px;font-weight:550;transition:.2s;pointer-events:none;max-width:90vw;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* App installée sur l'écran d'accueil (iOS 26) — mêmes correctifs que Vola :
+   1) iOS 26 estompe ~30 px sous l'heure : la barre du haut descend un peu pour rester nette,
+      et le fond de page (repris par iOS sous la barre d'état) est noir comme l'en-tête.
+   2) Bogue WebKit : la zone d'affichage est raccourcie (bande vide en bas) tant que la page n'est pas
+      aussi haute que l'écran. On donne à la page la hauteur de l'écran ; si la bande persiste, le script
+      la mesure (--vgap) : la barre d'onglets n'ajoute plus sa marge et la bande garde la même couleur. */
+@media (display-mode:standalone){
+  html{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
+  html,body{background:#000}
+  .top{padding-top:calc(var(--safe-t) + 14px)}
+  .toast{top:calc(var(--safe-t) + 76px)}
+}
+html.vgap{min-height:calc(100% + var(--vgap))}
 @media (max-width:430px){ .brand span{display:none} .top .btn{padding:0 12px} }
 @media (min-width:900px){
   #app{grid-template-columns:minmax(0,1fr) 384px;grid-template-rows:auto minmax(0,1fr)}
@@ -1064,7 +1079,7 @@ function reanchor(ly, L, s, toks, anchor) {
 }
 
 // ===================== app.js (état, aperçu, interactions, export) =====================
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 const KEEP_KEYS = ['t1', 't2', 't3', 't4', 'logo', 'logoTint', 'filmText'];
 const S = {
   photos: [], cur: -1, frame: { ...DEF, ...PRESETS.find(p => p.id === 'g-noir').p }, layers: [], sel: null,
@@ -1421,6 +1436,30 @@ window.addEventListener('paste', e => {
   const files = [...(e.clipboardData?.files || [])]; if (files.length) { e.preventDefault(); addFiles(files); }
 });
 window.addEventListener('resize', () => invalidate());
+
+// iOS 26, app installée : bande vide en bas (bogue WebKit). Le CSS donne à la page la hauteur de l'écran ;
+// si la bande persiste, on la mesure (--vgap) et la barre d'onglets ne rajoute plus sa marge. (Comme Vola.)
+function fitStandaloneViewport() {
+  const iphone = /iPhone|iPod/.test(navigator.userAgent);
+  const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if (!iphone || !standalone) return;
+  const root = document.documentElement;
+  const typing = () => { const a = document.activeElement; return !!a && a !== document.body && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName) && !/^(range|checkbox|color|file|button)$/.test(a.type || ''); };
+  const measure = () => {
+    if (typing()) return; // clavier ouvert : mesure faussée
+    const landscape = innerWidth > innerHeight;
+    const full = landscape ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+    const gap = Math.round(full - innerHeight), real = gap >= 16 && gap <= 100;
+    root.style.setProperty('--vgap', (real ? gap : 0) + 'px'); root.classList.toggle('vgap', real);
+    invalidate();
+  };
+  measure();
+  const later = ms => () => setTimeout(measure, ms);
+  addEventListener('resize', later(80)); addEventListener('orientationchange', later(350)); addEventListener('pageshow', later(80));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(measure, 300); });
+  // Après la fermeture du clavier, iOS laisse parfois la page décalée : on la remet en place.
+  document.addEventListener('focusout', () => setTimeout(() => { if (typing()) return; if (scrollY || scrollX) scrollTo(0, 0); measure(); }, 120));
+}
 $('#btnExportTop').onclick = () => { if (!curPhoto()) { $('#filePhotos').click(); return; } exportPhotos(false); };
 
 // ===================== panels.js (interface des onglets) =====================
@@ -1500,6 +1539,7 @@ function setTab(t) {
   S.tab = t;
   $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $$('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + t));
+  $('.panel').classList.toggle('compact', t === 'frames');
   if (t === 'frames') renderPresets(); if (t === 'adjust') renderAdjust(); if (t === 'sign') renderSign(); if (t === 'export') renderExport();
   invalidate();
 }
@@ -1871,6 +1911,7 @@ function renderExport() {
   await Promise.all([loadSigs(), loadStyles()]);
   S.layers = S.layers.filter(l => l.type !== 'img' || SIGS.has(l.sig));
   if (S.frame.logo && !SIGS.has(S.frame.logo)) S.frame.logo = '';
+  fitStandaloneViewport();
   H.stack = [snapshot()]; H.i = 0; updUndo();
   renderGroups(); setTab('frames'); renderPStrip();
   if (window.matchMedia && matchMedia('(hover: none)').matches) $$('.hint-desk').forEach(e => { e.style.display = 'none'; });

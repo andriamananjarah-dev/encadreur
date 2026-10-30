@@ -1,5 +1,5 @@
 // Encadreur — service worker (hors ligne). Changez CACHE à chaque mise à jour du site.
-const CACHE = 'encadreur-v1.0.1';
+const CACHE = 'encadreur-v1.0.2';
 const CORE = ['./', './index.html'];
 const EXTRA = ['./manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', e => {
@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   if (req.mode === 'navigate') {
     // Réseau d'abord (pour recevoir les mises à jour), cache si hors ligne
-    e.respondWith(fromNet(req, 4000).then(r => {
+    e.respondWith(fromNet(new Request(req.url, { cache: 'no-cache' }), 4000).then(r => {
       if (r.ok) { const cp = r.clone(); caches.open(CACHE).then(c => c.put('./index.html', cp)); }
       return r;
     }).catch(() => caches.match('./index.html').then(r => r || caches.match('./'))));

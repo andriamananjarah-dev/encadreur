@@ -27,7 +27,8 @@ Pour enregistrer une image exportée dans Photos : **Enregistrer / Partager** �
 - `index.html` fonctionne aussi tout seul, ouvert directement depuis l'ordinateur (sans le mode hors ligne).
 
 ## Mettre à jour
-Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.0.1'` → `v1.0.2`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.0.2'` → `v1.0.3`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Sur l'iPhone, fermez complètement l'app (balayez sa carte vers le haut), puis rouvrez-la avec une connexion : la nouvelle version se charge.
 Pour renommer l'app : modifiez `name` / `short_name` dans `manifest.webmanifest` et la balise `<title>` de `index.html`.
 
 ## Bon à savoir
