@@ -1,5 +1,5 @@
 // Encadreur — service worker (hors ligne). Changez CACHE à chaque mise à jour du site.
-const CACHE = 'encadreur-v1.2.0';
+const CACHE = 'encadreur-v1.3.0';
 const MPC = 'encadreur-mp-1'; // modèles de détection (≈ 16 Mo) : gardés d'une version à l'autre
 const CORE = ['./', './index.html'];
 const EXTRA = ['./manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
