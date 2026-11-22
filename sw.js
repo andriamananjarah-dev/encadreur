@@ -1,5 +1,6 @@
 // Encadreur — service worker (hors ligne). Changez CACHE à chaque mise à jour du site.
-const CACHE = 'encadreur-v1.1.0';
+const CACHE = 'encadreur-v1.2.0';
+const MPC = 'encadreur-mp-1'; // modèles de détection (≈ 16 Mo) : gardés d'une version à l'autre
 const CORE = ['./', './index.html'];
 const EXTRA = ['./manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', e => {
@@ -9,7 +10,7 @@ self.addEventListener('install', e => {
     .then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== MPC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 const fromNet = (req, ms) => new Promise((res, rej) => {
   const t = setTimeout(rej, ms);
@@ -26,8 +27,9 @@ self.addEventListener('fetch', e => {
     }).catch(() => caches.match('./index.html').then(r => r || caches.match('./'))));
     return;
   }
+  const store = /(face_mesh|selfie_segmentation)/.test(req.url) ? MPC : CACHE;
   e.respondWith(caches.match(req).then(r => r || fetch(req).then(res => {
-    if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
+    if (res.ok) { const cp = res.clone(); caches.open(store).then(c => c.put(req, cp)); }
     return res;
   })));
 });

@@ -80,7 +80,7 @@ body.comparing .cmp-badge{display:block}
 .body{min-width:0;height:clamp(196px,31dvh,330px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 16px;overscroll-behavior:contain}
 .pane{display:none}.pane.on{display:block}
 .panel.compact .body{height:auto} /* onglet Cadres : le panneau épouse son contenu, la photo gagne la place */
-.nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);padding-bottom:var(--sab);background:#000}
+.nav{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--line);padding-bottom:var(--sab);background:#000}
 .nav button{padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:550;color:var(--mut)}
 .nav button svg{width:22px;height:22px}
 .nav button.on{color:var(--acc)}
@@ -185,6 +185,12 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
    2) Bogue WebKit : la zone d'affichage est raccourcie (bande vide en bas) tant que la page n'est pas
       aussi haute que l'écran. On donne à la page la hauteur de l'écran ; si la bande persiste, le script
       la mesure (--vgap) : la barre d'onglets n'ajoute plus sa marge et la bande garde la même couleur. */
+/* retouche */
+.seg2{display:flex;background:#0f0f11;border-radius:12px;padding:3px;margin-bottom:8px}
+.seg2 button{flex:1;height:34px;border-radius:10px;font-weight:620;color:var(--mut)}
+.seg2 button.on{background:var(--acc);color:var(--acc-ink)}
+.spin{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid #555;border-top-color:var(--acc);animation:spin .8s linear infinite;vertical-align:-1px;margin-right:4px}
+.linkbtn{color:var(--acc);text-decoration:underline;font-weight:600}
 /* filtres */
 .subtabs.scroll{overflow-x:auto;scrollbar-width:none}
 .subtabs.scroll::-webkit-scrollbar{display:none}
@@ -219,7 +225,7 @@ html.vgap{min-height:calc(100% + var(--vgap))}
   .body{height:auto;flex:1;padding:16px 18px 24px}
   .chips,.hscroll,.lib{margin:0 -18px;padding-left:18px;padding-right:18px}
   .chips{margin-bottom:14px;flex-wrap:wrap;overflow:visible}
-  #pane-frames .hscroll,#pane-fx .hscroll{flex-wrap:wrap;overflow:visible;gap:14px 10px}
+  #pane-frames .hscroll,#pane-fx .hscroll,#pane-rt .hscroll{flex-wrap:wrap;overflow:visible;gap:14px 10px}
   .nav button{flex-direction:column;gap:3px;font-size:12px;padding:10px 0 9px}
   .nav button svg{width:20px;height:20px}
   .modal{align-items:center}
@@ -261,6 +267,11 @@ html.vgap{min-height:calc(100% + var(--vgap))}
         <div class="chips" id="groups"></div>
         <div class="hscroll" id="presets"></div>
       </div>
+      <div class="pane" id="pane-rt">
+        <div class="seg2" id="rtMode"></div>
+        <div class="subtabs scroll" id="rtSubtabs"></div>
+        <div id="rtBody"></div>
+      </div>
       <div class="pane" id="pane-fx">
         <div class="subtabs scroll" id="fxSubtabs"></div>
         <div id="fxBody"></div>
@@ -284,6 +295,7 @@ html.vgap{min-height:calc(100% + var(--vgap))}
     </div>
     <nav class="nav" id="nav">
       <button data-tab="fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8.6" r="5"/><circle cx="8.6" cy="14.6" r="5"/><circle cx="15.4" cy="14.6" r="5"/></svg>Filtres</button>
+      <button data-tab="rt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3c-4 0-6.5 3-6.5 7.2 0 4.6 3 8.8 6.5 8.8s6.5-4.2 6.5-8.8C18.5 6 16 3 12 3z"/><path d="M9.3 10.2h.01M14.7 10.2h.01M9.8 14.6c1.3 1 3.1 1 4.4 0"/></svg>Retouche</button>
       <button data-tab="frames"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><rect x="7.5" y="7.5" width="9" height="9"/></svg>Cadres</button>
       <button data-tab="adjust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>Réglages</button>
       <button data-tab="sign"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c2.5-.5 3.5-8 6.5-8 2 0-1 8.5 1.2 8.5 1.6 0 2.4-4.2 4-4.2 1.1 0 .9 3.2 2.1 3.2.9 0 1.9-1 3.2-2.1"/><path d="M3 20.5h18"/></svg>Signature</button>
@@ -1230,7 +1242,7 @@ void main(){
 }`;
 
 const FX = (() => {
-  let cv = null, gl = null, loc = {}, tImg = null, tBlur = null, lastSrc = null, lastBlur = null, failed = false, maxTex = 4096, maxVp = [4096, 4096];
+  let lastK; let cv = null, gl = null, loc = {}, tImg = null, tBlur = null, lastSrc = null, lastBlur = null, failed = false, maxTex = 4096, maxVp = [4096, 4096];
   const UN = ['uImg', 'uBlur', 'uPx', 'uAR', 'uExp', 'uCon', 'uHi', 'uSh', 'uWh', 'uBl', 'uTemp', 'uTint', 'uVib', 'uSat', 'uClar', 'uDehaze', 'uSharp', 'uGlow', 'uFade',
     'uVig', 'uVigSize', 'uVigFeather', 'uGrain', 'uGrainSize', 'uBW', 'uAmount', 'uBal', 'uCen', 'uHSL', 'uGrade'];
   function init() {
@@ -1289,7 +1301,7 @@ const FX = (() => {
     const sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
     if (sw > maxTex || sh > maxTex) { src = scaled(src, maxTex); lastSrc = null; }
     try {
-      if (src !== lastSrc) { upload(0, tImg, src); lastSrc = src; }
+      if (src !== lastSrc || src.__k !== lastK) { upload(0, tImg, src); lastSrc = src; lastK = src.__k; }
       if (blurSrc !== lastBlur) { upload(1, tBlur, blurSrc); lastBlur = blurSrc; }
       gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tImg);
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tBlur);
@@ -1393,13 +1405,562 @@ function fxAdj(p) {
   return o;
 }
 
+// ===================== face.js (détection hors ligne + géométrie du visage) =====================
+const LMK = {
+  OVAL: [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109],
+  EYE_A: [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
+  EYE_B: [263, 249, 390, 373, 374, 380, 381, 382, 362, 398, 384, 385, 386, 387, 388, 466],
+  LID_A: [33, 7, 163, 144, 145, 153, 154, 155, 133], LID_B: [263, 249, 390, 373, 374, 380, 381, 382, 362],
+  BROW_A: [70, 63, 105, 66, 107, 55, 65, 52, 53, 46], BROW_B: [300, 293, 334, 296, 336, 285, 295, 282, 283, 276],
+  LIPS_O: [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291, 409, 270, 269, 267, 0, 37, 39, 40, 185],
+  LIPS_I: [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 415, 310, 311, 312, 13, 82, 81, 80, 191],
+  SIDE_A: [234, 93, 132, 58, 172, 136, 150], SIDE_B: [454, 323, 361, 288, 397, 365, 379],
+};
+let _mpLoad = null, _fm = null, _ss = null;
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('script')); document.head.appendChild(s); });
+function mpReady() {
+  if (_mpLoad) return _mpLoad;
+  _mpLoad = (async () => {
+    if (!/^https?:$/.test(location.protocol)) throw new Error('file');
+    if (!window.FaceMesh) await loadScript('face_mesh.js');
+    if (!window.SelfieSegmentation) await loadScript('selfie_segmentation.js');
+    _fm = new window.FaceMesh({ locateFile: f => f });
+    _fm.setOptions({ maxNumFaces: 4, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+    _ss = new window.SelfieSegmentation({ locateFile: f => f });
+    _ss.setOptions({ modelSelection: 0 });
+    await _fm.initialize(); await _ss.initialize();
+  })();
+  _mpLoad.catch(() => { _mpLoad = null; });
+  return _mpLoad;
+}
+// Analyse : points du visage (478 par visage, normalisés) + masque de la personne
+let _mpBusy = Promise.resolve();
+function analyzeImage(cv) {
+  const run = async () => {
+    await mpReady();
+    let faces = [], pm = null;
+    _fm.onResults(r => { faces = (r.multiFaceLandmarks || []).filter(f => f.length >= 478).map(f => { const a = new Float32Array(956); for (let i = 0; i < 478; i++) { a[i * 2] = f[i].x; a[i * 2 + 1] = f[i].y; } return a; }); });
+    if (_fm.reset) _fm.reset();
+    await _fm.send({ image: cv });
+    _ss.onResults(r => { const m = r.segmentationMask; pm = mkCanvas(Math.min(cv.width, 1024), Math.min(cv.width, 1024) * cv.height / cv.width); pm.getContext('2d').drawImage(m, 0, 0, pm.width, pm.height); });
+    if (_ss.reset) _ss.reset();
+    await _ss.send({ image: cv });
+    return { faces, pm };
+  };
+  const p = _mpBusy.then(run, run); _mpBusy = p.catch(() => { }); return p;
+}
+async function ensureFace(ph, src) {
+  if (ph.face) return ph.face;
+  const cv = src || ph.prev; if (!cv) throw new Error('src');
+  const det = Math.max(cv.width, cv.height) > 1600 ? scaled(cv, 1600) : cv;
+  ph.face = await analyzeImage(det);
+  if (det !== cv) freeCanvas(det);
+  return ph.face;
+}
+
+// ----- géométrie (pixels, origine en haut à gauche) -----
+const lmPt = (f, i, W, H) => [f[i * 2] * W, f[i * 2 + 1] * H];
+const vsub = (a, b) => [a[0] - b[0], a[1] - b[1]], vadd = (a, b) => [a[0] + b[0], a[1] + b[1]], vmul = (a, k) => [a[0] * k, a[1] * k];
+const vlen = a => Math.hypot(a[0], a[1]), vnorm = a => { const l = vlen(a) || 1; return [a[0] / l, a[1] / l]; }, vdot = (a, b) => a[0] * b[0] + a[1] * b[1];
+function faceFrame(f, W, H) {
+  const P = i => lmPt(f, i, W, H), eA = P(468), eB = P(473), mid = vmul(vadd(eA, eB), 0.5);
+  const x = vnorm(vsub(eB, eA)); let y = [-x[1], x[0]]; if (vdot(y, vsub(P(152), mid)) < 0) y = [-y[0], -y[1]];
+  const top = P(10), chin = P(152), c = vmul(vadd(top, chin), 0.5);
+  return { P, eA, eB, mid, x, y, top, chin, c, W: vlen(vsub(P(454), P(234))), H: vlen(vsub(chin, top)), eyeW: (vlen(vsub(P(33), P(133))) + vlen(vsub(P(263), P(362)))) / 2, mouthW: vlen(vsub(P(61), P(291))) };
+}
+// Déplacement horizontal (axe du visage) qui éloigne un point du centre
+const outward = (F, p) => vmul(F.x, vdot(vsub(p, F.c), F.x) >= 0 ? 1 : -1);
+
+// ----- poignées de déformation (liquéfier) d'après les curseurs -----
+function warpHandles(face, rt, W, H) {
+  const out = [], n = v => (+v || 0) / 100;
+  const B = (p, R, s) => { if (s) out.push({ p, R, s, t: 0 }); };
+  const T = (p, R, s, d) => { if (s) out.push({ p, R, s, d, t: 1 }); };
+  for (const f of face.faces) {
+    const F = faceFrame(f, W, H), P = F.P, up = vmul(F.y, -1);
+    B(F.eA, 1.7 * F.eyeW, n(rt.eyeSize) * 0.26); B(F.eB, 1.7 * F.eyeW, n(rt.eyeSize) * 0.26);
+    T(F.eA, 1.6 * F.eyeW, n(rt.eyeDist) * 0.1, outward(F, F.eA)); T(F.eB, 1.6 * F.eyeW, n(rt.eyeDist) * 0.1, outward(F, F.eB));
+    const nW = vlen(vsub(P(129), P(358))), nL = vlen(vsub(P(168), P(2)));
+    T(P(129), 0.6 * nW, n(rt.noseW) * 0.22, outward(F, P(129))); T(P(358), 0.6 * nW, n(rt.noseW) * 0.22, outward(F, P(358)));
+    B(vmul(vadd(P(4), P(6)), 0.5), 0.75 * nL, n(rt.noseSize) * 0.2);
+    T(P(4), 0.65 * nW, n(rt.noseTip) * 0.12, up);
+    LMK.SIDE_A.concat(LMK.SIDE_B).forEach(i => T(P(i), 0.3 * F.W, n(rt.slim) * 0.055, outward(F, P(i))));
+    [172, 136, 150, 397, 365, 379].forEach(i => T(P(i), 0.2 * F.W, n(rt.jaw) * 0.07, outward(F, P(i))));
+    T(F.chin, 0.32 * F.W, n(rt.chin) * 0.08, F.y);
+    B(P(205), 0.26 * F.W, n(rt.cheeks) * 0.16); B(P(425), 0.26 * F.W, n(rt.cheeks) * 0.16);
+    T(F.top, 0.45 * F.W, n(rt.forehead) * 0.07, up);
+    B(vmul(vadd(P(13), P(14)), 0.5), 0.72 * F.mouthW, n(rt.lipSize) * 0.2);
+    [61, 291].forEach(i => { T(P(i), 0.3 * F.mouthW, n(rt.smile) * 0.1, vnorm(vadd(up, vmul(outward(F, P(i)), 0.35)))); T(P(i), 0.38 * F.mouthW, n(rt.mouthW) * 0.08, outward(F, P(i))); });
+  }
+  return out;
+}
+// Carte de déplacement basse définition (RG = dx, BA = dy, 8 bits centrés sur 128) ; rect normalisé
+function dispMap(face, rt, W, H) {
+  const hs = warpHandles(face, rt, W, H); if (!hs.length) return null;
+  let x0 = W, y0 = H, x1 = 0, y1 = 0;
+  hs.forEach(h => { x0 = Math.min(x0, h.p[0] - h.R * 1.3); y0 = Math.min(y0, h.p[1] - h.R * 1.3); x1 = Math.max(x1, h.p[0] + h.R * 1.3); y1 = Math.max(y1, h.p[1] + h.R * 1.3); });
+  x0 = clamp(x0, 0, W); y0 = clamp(y0, 0, H); x1 = clamp(x1, 0, W); y1 = clamp(y1, 0, H);
+  if (x1 - x0 < 2 || y1 - y0 < 2) return null;
+  const k = 256 / Math.max(x1 - x0, y1 - y0), mw = Math.max(2, Math.round((x1 - x0) * k)), mh = Math.max(2, Math.round((y1 - y0) * k));
+  const dx = new Float32Array(mw * mh), dy = new Float32Array(mw * mh); let mx = 0;
+  for (let j = 0; j < mh; j++) for (let i = 0; i < mw; i++) {
+    const px = x0 + (i + 0.5) / k, py = y0 + (j + 0.5) / k; let ax = 0, ay = 0;
+    for (const h of hs) {
+      const ddx = px - h.p[0], ddy = py - h.p[1], r = Math.hypot(ddx, ddy) / h.R; if (r >= 1) continue;
+      let w = 1 - r * r; w *= w;
+      if (h.t === 0) { ax -= ddx * h.s * w; ay -= ddy * h.s * w; } else { ax -= h.d[0] * h.s * w * h.R; ay -= h.d[1] * h.s * w * h.R; }
+    }
+    dx[j * mw + i] = ax; dy[j * mw + i] = ay; mx = Math.max(mx, Math.abs(ax), Math.abs(ay));
+  }
+  if (mx < 0.05) return null;
+  const c = mkCanvas(mw, mh), g = c.getContext('2d'), id = g.createImageData(mw, mh), d = id.data, sc = 127 / mx;
+  for (let q = 0; q < mw * mh; q++) { d[q * 4] = 128 + Math.round(dx[q] * sc); d[q * 4 + 1] = 128 + Math.round(dy[q] * sc); d[q * 4 + 2] = 0; d[q * 4 + 3] = 255; }
+  g.putImageData(id, 0, 0);
+  return { cv: c, rect: [x0 / W, y0 / H, (x1 - x0) / W, (y1 - y0) / H], k: mx / 127 };
+}
+
+// ----- correcteur d'imperfections (copie d'une zone de peau voisine, bords fondus) -----
+function healSpots(src, spots) {
+  if (!spots || !spots.length) return src;
+  const W = src.width, H = src.height, out = mkCanvas(W, H), g = out.getContext('2d'); g.drawImage(src, 0, 0);
+  const rd = mkCanvas(1, 1).getContext('2d');
+  for (const s of spots) {
+    const cx = s.x * W, cy = s.y * H, r = Math.max(2, s.r * Math.max(W, H)), R = Math.ceil(r * 1.25);
+    const cands = [[2.4, 0], [-2.4, 0], [0, 2.4], [0, -2.4], [1.7, 1.7], [-1.7, 1.7]].map(([a, b]) => [cx + a * r, cy + b * r]).filter(([x, y]) => x - R >= 0 && y - R >= 0 && x + R < W && y + R < H);
+    if (!cands.length) continue;
+    const mean = (x, y, rr) => { rd.canvas.width = 1; rd.canvas.height = 1; rd.drawImage(out, x - rr, y - rr, rr * 2, rr * 2, 0, 0, 1, 1); const p = rd.getImageData(0, 0, 1, 1).data; return [p[0], p[1], p[2]]; };
+    const ring = mean(cx, cy, r * 1.8), dist = c => { const m = mean(c[0], c[1], r); return Math.hypot(m[0] - ring[0], m[1] - ring[1], m[2] - ring[2]); };
+    const best = cands.reduce((a, b) => dist(b) < dist(a) ? b : a);
+    const p = mkCanvas(R * 2, R * 2), pg = p.getContext('2d');
+    pg.drawImage(out, best[0] - R, best[1] - R, R * 2, R * 2, 0, 0, R * 2, R * 2);
+    const gr = pg.createRadialGradient(R, R, r * 0.45, R, R, r * 1.15); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    pg.globalCompositeOperation = 'destination-in'; pg.fillStyle = gr; pg.fillRect(0, 0, R * 2, R * 2);
+    g.drawImage(p, cx - R, cy - R);
+  }
+  return out;
+}
+
+// ===================== masks.js (sélections automatiques : peau, lèvres, dents, yeux, iris, cernes, cheveux) =====================
+function fillPoly(g, pts) { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fill(); }
+function strokePoly(g, pts) { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.stroke(); }
+const ycc = (r, g, b) => [0.299 * r + 0.587 * g + 0.114 * b, 128 - 0.1687 * r - 0.3313 * g + 0.5 * b, 128 + 0.5 * r - 0.4187 * g - 0.0813 * b];
+
+// face : { faces, pm } ; src : image complète (toute résolution) ; rt : réglages ; edits : coups de pinceau cheveux
+function buildMasks(face, src, rt, edits) {
+  const IW = src.width, IH = src.height, ext = clamp((rt.hairExt ?? 50) / 100, 0, 1), tol = clamp((rt.hairTol ?? 50) / 100, 0, 1);
+  const FS = face.faces.map(f => ({ f, F: faceFrame(f, IW, IH) }));
+  if (!FS.length) return null;
+  // zone de travail : têtes + cheveux
+  let x0 = IW, y0 = IH, x1 = 0, y1 = 0;
+  FS.forEach(({ F }) => {
+    x0 = Math.min(x0, F.c[0] - 1.3 * F.W); x1 = Math.max(x1, F.c[0] + 1.3 * F.W);
+    y0 = Math.min(y0, F.top[1] - 1.0 * F.H); y1 = Math.max(y1, F.chin[1] + (0.7 + 1.7 * ext) * F.H);
+  });
+  x0 = clamp(x0, 0, IW); y0 = clamp(y0, 0, IH); x1 = clamp(x1, 0, IW); y1 = clamp(y1, 0, IH);
+  const k = Math.min(1, 768 / Math.max(x1 - x0, y1 - y0)), mw = Math.max(8, Math.round((x1 - x0) * k)), mh = Math.max(8, Math.round((y1 - y0) * k)), N = mw * mh;
+  const toM = p => [(p[0] - x0) * k, (p[1] - y0) * k], poly = (f, idx) => idx.map(i => toM(lmPt(f, i, IW, IH)));
+  const S = mkCanvas(mw, mh), sg = S.getContext('2d', { willReadFrequently: true }); sg.drawImage(src, x0, y0, x1 - x0, y1 - y0, 0, 0, mw, mh);
+  const sd = sg.getImageData(0, 0, mw, mh).data; freeCanvas(S);
+  const C = mkCanvas(mw, mh), g = C.getContext('2d', { willReadFrequently: true }), fw = FS[0].F.W * k;
+  const channel = (draw, blur) => {
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.fillStyle = '#000'; g.fillRect(0, 0, mw, mh);
+    g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineJoin = 'round'; g.lineCap = 'round'; draw();
+    if (blur >= 1) blurCanvas(C, blur);
+    const d = g.getImageData(0, 0, mw, mh).data, a = new Uint8ClampedArray(N); for (let i = 0; i < N; i++) a[i] = d[i * 4]; return a;
+  };
+  const W = (c, fn) => { g.fillStyle = c; g.strokeStyle = c; fn(); };
+  // peau du visage (ovale moins yeux, sourcils, lèvres) × ressemblance de couleur avec les joues
+  const skin = channel(() => FS.forEach(({ f, F }) => {
+    W('#fff', () => fillPoly(g, poly(f, LMK.OVAL)));
+    W('#000', () => {
+      [LMK.EYE_A, LMK.EYE_B].forEach(e => { const p = poly(f, e); fillPoly(g, p); g.lineWidth = F.eyeW * k * 0.5; strokePoly(g, p); });
+      [LMK.BROW_A, LMK.BROW_B].forEach(b => { const p = poly(f, b); fillPoly(g, p); g.lineWidth = F.eyeW * k * 0.3; strokePoly(g, p); });
+      const lp = poly(f, LMK.LIPS_O); fillPoly(g, lp); g.lineWidth = F.mouthW * k * 0.1; strokePoly(g, lp);
+    });
+  }), fw * 0.025);
+  const st = [[], []];
+  FS.forEach(({ f, F }) => [50, 280, 101, 330, 151, 205, 425].forEach(i => {
+    const [cx, cy] = toM(lmPt(f, i, IW, IH)), r = Math.max(1, F.W * k * 0.035);
+    for (let yy = -r; yy <= r; yy += Math.max(1, r / 4)) for (let xx = -r; xx <= r; xx += Math.max(1, r / 4)) {
+      const px = Math.round(cx + xx), py = Math.round(cy + yy); if (px < 0 || py < 0 || px >= mw || py >= mh) continue;
+      const q = (py * mw + px) * 4, v = ycc(sd[q], sd[q + 1], sd[q + 2]); st[0].push(v[1]); st[1].push(v[2]);
+    }
+  }));
+  const ms = a => { const m = a.reduce((x, y) => x + y, 0) / Math.max(1, a.length); return [m, Math.sqrt(a.reduce((x, y) => x + (y - m) * (y - m), 0) / Math.max(1, a.length))]; };
+  const [mcb, scb] = ms(st[0]), [mcr, scr] = ms(st[1]), vcb = Math.max(scb * 2.4, 5), vcr = Math.max(scr * 2.4, 5);
+  for (let i = 0; i < N; i++) {
+    if (!skin[i]) continue;
+    const v = ycc(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]), lik = Math.exp(-0.5 * ((v[1] - mcb) ** 2 / (vcb * vcb) + (v[2] - mcr) ** 2 / (vcr * vcr)));
+    skin[i] = skin[i] * clamp((lik - 0.06) / 0.4, 0, 1);
+  }
+  const lips = channel(() => FS.forEach(({ f }) => { W('#fff', () => fillPoly(g, poly(f, LMK.LIPS_O))); W('#000', () => fillPoly(g, poly(f, LMK.LIPS_I))); }), Math.max(1, FS[0].F.mouthW * k * 0.03));
+  const mouth = channel(() => FS.forEach(({ f }) => fillPoly(g, poly(f, LMK.LIPS_I))), Math.max(1, FS[0].F.mouthW * k * 0.015));
+  const eyes = channel(() => FS.forEach(({ f }) => [LMK.EYE_A, LMK.EYE_B].forEach(e => fillPoly(g, poly(f, e)))), Math.max(1, FS[0].F.eyeW * k * 0.05));
+  const iris = channel(() => FS.forEach(({ f }) => [[468, LMK.EYE_A], [473, LMK.EYE_B]].forEach(([c, e]) => {
+    const p = toM(lmPt(f, c, IW, IH)); let r = 0; for (let j = 1; j <= 4; j++) r += vlen(vsub(toM(lmPt(f, c + j, IW, IH)), p)) / 4;
+    g.save(); g.beginPath(); poly(f, e).forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); g.clip();
+    g.beginPath(); g.arc(p[0], p[1], r * 1.02, 0, 7); g.fill(); g.restore();
+  })), Math.max(1, FS[0].F.eyeW * k * 0.025));
+  const under = channel(() => FS.forEach(({ f, F }) => [LMK.LID_A, LMK.LID_B].forEach(lid => {
+    const a = lid.map(i => lmPt(f, i, IW, IH)), b = a.map(p => vadd(vadd(p, vmul(F.y, 0.36 * F.eyeW)), vmul(F.y, 0))).reverse();
+    fillPoly(g, a.concat(b).map(toM));
+  })), Math.max(1, FS[0].F.eyeW * k * 0.16));
+  // ----- cheveux : silhouette × zone de la tête × couleur des cheveux, moins le visage et le cou -----
+  const pmC = mkCanvas(mw, mh), pmg = pmC.getContext('2d', { willReadFrequently: true }), pmS = face.pm;
+  pmg.drawImage(pmS, x0 / IW * pmS.width, y0 / IH * pmS.height, (x1 - x0) / IW * pmS.width, (y1 - y0) / IH * pmS.height, 0, 0, mw, mh);
+  const pd = pmg.getImageData(0, 0, mw, mh).data; freeCanvas(pmC);
+  const crownEl = F => { const c = toM(vadd(F.top, vmul(F.y, 0.02 * F.H))); g.save(); g.translate(c[0], c[1]); g.rotate(Math.atan2(F.x[1], F.x[0]));
+    g.beginPath(); g.ellipse(0, 0, 0.78 * F.W * k, (0.6 + 0.3 * ext) * F.H * k, 0, 0, Math.PI * 2); g.fill(); g.restore(); };
+  const crown = channel(() => FS.forEach(({ F }) => crownEl(F)), fw * 0.06);
+  const prior = channel(() => FS.forEach(({ f, F }) => {
+    crownEl(F);
+    const drop = (0.1 + 1.3 * ext) * F.H;
+    [[127, 172], [356, 397]].forEach(([t, j]) => {
+      const T = lmPt(f, t, IW, IH), J = lmPt(f, j, IW, IH), o = outward(F, T);
+      fillPoly(g, [T, vadd(T, vmul(o, 0.42 * F.W)), vadd(vadd(J, vmul(o, 0.5 * F.W)), vmul(F.y, drop)), vadd(vadd(J, vmul(o, 0.02 * F.W)), vmul(F.y, drop * 0.85)), J].map(toM));
+    });
+  }), fw * 0.08);
+  const excl = channel(() => FS.forEach(({ f, F }) => {
+    fillPoly(g, poly(f, LMK.OVAL));
+    const L = lmPt(f, 172, IW, IH), R = lmPt(f, 397, IW, IH), dn = vmul(F.y, 3 * F.H);
+    fillPoly(g, [L, R, vadd(vadd(R, dn), vmul(outward(F, R), 0.25 * F.W)), vadd(vadd(L, dn), vmul(outward(F, L), 0.25 * F.W))].map(toM));
+  }), fw * 0.02);
+  // modèle de couleur : pixels sûrs du haut de la tête
+  const smp = [[], [], [], [], []];
+  for (let i = 0; i < N; i += 3) if (prior[i] > 200 && pd[i * 4 + 3] > 160 && excl[i] < 30) { const v = ycc(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]), sm = sd[i * 4] + sd[i * 4 + 1] + sd[i * 4 + 2] + 1; smp[0].push(v[0]); smp[1].push(v[1]); smp[2].push(v[2]); smp[3].push(sd[i * 4] / sm); smp[4].push(sd[i * 4 + 2] / sm); }
+  const med = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y); return b[b.length >> 1]; };
+  const hy = med(smp[0]), hcb = med(smp[1]), hcr = med(smp[2]), sUp = 24 + 50 * tol, sDn = 70, sC = 6 + 14 * tol, enough = smp[0].length > 30, hrn = med(smp[3]), hbn = med(smp[4]), sCh = 0.03 + 0.05 * tol;
+  let skY = 0, skN = 0; for (let i = 0; i < N; i += 7) if (skin[i] > 200) { skY += ycc(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2])[0]; skN++; } skY = skN ? skY / skN : 150;
+  const hair = new Uint8ClampedArray(N);
+  for (let i = 0; i < N; i++) {
+    const base = (pd[i * 4 + 3] / 255) * (prior[i] / 255) * (1 - excl[i] / 255); if (base <= 0.01) continue;
+    let lik = 1;
+    if (enough) {
+      const v = ycc(sd[i * 4], sd[i * 4 + 1], sd[i * 4 + 2]), dy = v[0] - hy, sy = dy > 0 ? sUp : sDn;
+      const sm = sd[i * 4] + sd[i * 4 + 1] + sd[i * 4 + 2] + 1, wch = clamp((sm - 25) / 60, 0, 1), dch = ((sd[i * 4] / sm - hrn) ** 2 + (sd[i * 4 + 2] / sm - hbn) ** 2) / (sCh * sCh);
+      lik = Math.exp(-0.5 * (dy * dy / (sy * sy) + ((v[1] - hcb) ** 2 + (v[2] - hcr) ** 2) / (sC * sC) + dch * wch));
+      const sl = Math.exp(-0.5 * ((v[1] - mcb) ** 2 / (vcb * vcb) + (v[2] - mcr) ** 2 / (vcr * vcr)));
+      if (v[0] > hy + 20 && Math.abs(v[0] - skY) < 60) lik *= 1 - sl * 0.9;
+    }
+    const t = base * Math.max(lik, 0.6 * crown[i] / 255); hair[i] = 255 * clamp((t - 0.2) / 0.3, 0, 1);
+  }
+  // pinceau d'affinage (ajouter / effacer)
+  if (edits && edits.length) {
+    const add = channel(() => edits.filter(e => e.m === 'add').forEach(e => { g.lineWidth = e.r * Math.max(IW, IH) * k * 2; g.beginPath(); e.pts.forEach((p, i) => { const q = toM([p[0] * IW, p[1] * IH]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); if (e.pts.length === 1) { const q = toM([e.pts[0][0] * IW, e.pts[0][1] * IH]); g.lineTo(q[0] + 0.1, q[1]); } g.stroke(); }), 1);
+    const era = channel(() => edits.filter(e => e.m === 'erase').forEach(e => { g.lineWidth = e.r * Math.max(IW, IH) * k * 2; g.beginPath(); e.pts.forEach((p, i) => { const q = toM([p[0] * IW, p[1] * IH]); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); if (e.pts.length === 1) { const q = toM([e.pts[0][0] * IW, e.pts[0][1] * IH]); g.lineTo(q[0] + 0.1, q[1]); } g.stroke(); }), 1);
+    for (let i = 0; i < N; i++) hair[i] = Math.max(hair[i], add[i]) * (1 - era[i] / 255);
+  }
+  // étendue verticale des cheveux (dégradé racines → pointes)
+  let top = -1, bot = -1;
+  for (let y = 0; y < mh; y++) { let s = 0; for (let x = 0; x < mw; x++) s += hair[y * mw + x]; if (s > 255 * 3) { if (top < 0) top = y; bot = y; } }
+  // assemblage en 2 textures RGBA
+  const pack = (a, b, c2, d) => { const cv = mkCanvas(mw, mh), cg = cv.getContext('2d'), id = cg.createImageData(mw, mh), o = id.data;
+    for (let i = 0; i < N; i++) { o[i * 4] = a[i]; o[i * 4 + 1] = b[i]; o[i * 4 + 2] = c2[i]; o[i * 4 + 3] = d ? d[i] : 255; } cg.putImageData(id, 0, 0); return cv; };
+  freeCanvas(C);
+  return {
+    m1: pack(skin, lips, mouth, eyes), m2: pack(hair, iris, under, null), rect: [x0 / IW, y0 / IH, (x1 - x0) / IW, (y1 - y0) / IH],
+    hairY: top < 0 ? [0, 1] : [(y0 + top / k) / IH, (y0 + bot / k) / IH], hairCol: enough ? [hy, hcb, hcr] : null,
+  };
+}
+// Aperçu de la sélection des cheveux (rouge translucide), pour l'afficher sur la photo
+function hairOverlay(rtm) {
+  const m = rtm.m2, c = mkCanvas(m.width, m.height), g = c.getContext('2d'); g.drawImage(m, 0, 0);
+  const id = g.getImageData(0, 0, c.width, c.height), d = id.data;
+  for (let i = 0; i < d.length; i += 4) { const a = d[i]; d[i] = 255; d[i + 1] = 40; d[i + 2] = 90; d[i + 3] = a * 0.55; }
+  g.putImageData(id, 0, 0); return c;
+}
+
+// ===================== retouch-gl.js (retouche locale sur GPU : liquéfier, peau, yeux, dents, lèvres, cheveux) =====================
+const RT0 = {
+  smooth: 0, smoothR: 50, tone: 0, bright: 0, skinT: 0, matte: 0,
+  eyeSize: 0, eyeDist: 0, eyeW: 0, eyeB: 0, dark: 0, irisA: 0, irisC: '#4f86c6',
+  teeth: 0, lipA: 0, lipC: '#b3264d', gloss: 0, lipSize: 0, smile: 0, mouthW: 0,
+  noseW: 0, noseSize: 0, noseTip: 0, slim: 0, jaw: 0, chin: 0, cheeks: 0, forehead: 0,
+  hairA: 0, hairC: '#7a3b1e', hairL: 0, ombre: false, ombreC: '#d8a35c', ombreP: 55, ombreS: 30, hairSm: 0, shine: 0, hairTol: 50, hairExt: 50,
+  wig: '', wigC: '#2e1d14', wigSize: 100, wigY: 0, wigX: 0, wigHi: 30,
+};
+const normRt = r => ({ ...RT0, ...(r || {}) });
+const RT_WARP = ['eyeSize', 'eyeDist', 'noseW', 'noseSize', 'noseTip', 'slim', 'jaw', 'chin', 'cheeks', 'forehead', 'lipSize', 'smile', 'mouthW'];
+const RT_LOCAL = ['smooth', 'tone', 'bright', 'skinT', 'matte', 'eyeW', 'eyeB', 'dark', 'irisA', 'teeth', 'lipA', 'gloss', 'hairA', 'hairL', 'hairSm', 'shine'];
+const rtWarpOn = r => RT_WARP.some(k => +r[k]);
+const rtLocalOn = r => RT_LOCAL.some(k => +r[k]);
+const rtOn = (r, ph) => rtWarpOn(r) || rtLocalOn(r) || !!r.wig || !!(ph && ph.spots && ph.spots.length);
+
+const RT_FS = `precision highp float;
+varying vec2 vUv;
+uniform sampler2D uImg, uM1, uM2, uDisp;
+uniform vec2 uSize, uHairY;
+uniform vec4 uMR, uDR;
+uniform float uDispK, uHasDisp, uHasMask;
+uniform float uSmooth, uSmR, uTone, uBright, uSkinT, uMatte, uTeeth, uEyeW, uEyeB, uDark, uIrisA, uLipA, uGloss;
+uniform float uHairA, uHairL, uOmbre, uOmbreP, uOmbreS, uHairSm, uHairR, uShine;
+uniform vec3 uIrisC, uLipC, uHairC, uOmbreC;
+float luma(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+vec3 rgb2hsl(vec3 c){
+  float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), l = (mx + mn) * 0.5, d = mx - mn, h = 0.0, s = 0.0;
+  if (d > 0.00001) { s = l > 0.5 ? d / (2.0 - mx - mn) : d / (mx + mn);
+    if (mx == c.r) h = (c.g - c.b) / d + (c.g < c.b ? 6.0 : 0.0); else if (mx == c.g) h = (c.b - c.r) / d + 2.0; else h = (c.r - c.g) / d + 4.0; h /= 6.0; }
+  return vec3(h, s, l); }
+float h2c(float p, float q, float t){ t = fract(t); if (t < 1.0/6.0) return p + (q - p) * 6.0 * t; if (t < 0.5) return q; if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0; return p; }
+vec3 hsl2rgb(vec3 h){ if (h.y < 0.00001) return vec3(h.z); float q = h.z < 0.5 ? h.z * (1.0 + h.y) : h.z + h.y - h.z * h.y, p = 2.0 * h.z - q;
+  return vec3(h2c(p, q, h.x + 1.0/3.0), h2c(p, q, h.x), h2c(p, q, h.x - 1.0/3.0)); }
+vec4 msk(sampler2D t, vec2 uv){ vec2 m = (uv - uMR.xy) / uMR.zw; if (uHasMask < 0.5 || m.x < 0.0 || m.y < 0.0 || m.x > 1.0 || m.y > 1.0) return vec4(0.0); return texture2D(t, m); }
+void main(){
+  vec2 uv = vUv;
+  if (uHasDisp > 0.5) { vec2 m = (vUv - uDR.xy) / uDR.zw;
+    if (m.x >= 0.0 && m.y >= 0.0 && m.x <= 1.0 && m.y <= 1.0) { vec4 d = texture2D(uDisp, m); vec2 dp = (d.xy * 255.0 - 128.0) * uDispK; uv += vec2(dp.x, -dp.y) / uSize; } }
+  vec3 c = texture2D(uImg, uv).rgb;
+  vec4 m1 = msk(uM1, uv), m2 = msk(uM2, uv);
+  float sk = m1.r * uSmooth, hs = m2.r * uHairSm, need = max(max(sk, hs), m1.r * uTone);
+  if (need > 0.002) {
+    float R = m1.r >= m2.r ? uSmR : uHairR;
+    vec3 acc = c; float ws = 1.0;
+    for (int i = 0; i < 16; i++) {
+      float a = float(i) * 0.7854 + (i >= 8 ? 0.3927 : 0.0), rr = i < 8 ? 0.45 * R : R;
+      vec3 s = texture2D(uImg, uv + vec2(cos(a), sin(a)) * rr / uSize).rgb, df = s - c;
+      float w = exp(-dot(df, df) * 38.0); acc += s * w; ws += w;
+    }
+    vec3 sm = acc / ws;
+    vec3 small = (texture2D(uImg, uv + vec2(1.5, 0.0) / uSize).rgb + texture2D(uImg, uv - vec2(1.5, 0.0) / uSize).rgb
+      + texture2D(uImg, uv + vec2(0.0, 1.5) / uSize).rgb + texture2D(uImg, uv - vec2(0.0, 1.5) / uSize).rgb) * 0.25;
+    c = mix(c, sm + (c - small) * 0.35, max(sk, hs));
+    c += ((sm - luma(sm)) - (c - luma(c))) * uTone * m1.r;
+  }
+  float L = luma(c);
+  // peau : éclat, chaleur, anti-brillance
+  c += (1.0 - c) * uBright * 0.22 * m1.r;
+  c += vec3(0.045, 0.01, -0.045) * uSkinT * m1.r;
+  float hl = smoothstep(0.6, 0.95, L) * m1.r * uMatte; c = mix(c, c * (0.68 / max(L, 0.68)), hl);
+  // dents
+  vec3 h = rgb2hsl(c); L = luma(c);
+  float red = (h.x < 0.06 || h.x > 0.92) ? smoothstep(0.25, 0.5, h.y) : 0.0;
+  float tw = m1.b * smoothstep(0.2, 0.42, L) * (1.0 - smoothstep(0.38, 0.7, h.y)) * (1.0 - red) * uTeeth;
+  c = mix(c, vec3(min(1.0, L * 1.1 + 0.05)) + vec3(-0.006, 0.0, 0.014), tw);
+  // yeux : blanc de l'œil, iris (sans la pupille), couleur des iris
+  float sclera = m1.a * (1.0 - m2.g) * smoothstep(0.28, 0.58, L) * (1.0 - smoothstep(0.22, 0.5, h.y));
+  c = mix(c, vec3(min(1.0, L * 1.12 + 0.05)), sclera * uEyeW);
+  float ir = m2.g * smoothstep(0.05, 0.15, L);
+  c = mix(c, clamp((c - 0.5) * 1.3 + 0.56, 0.0, 1.0), ir * uEyeB * 0.7);
+  if (uIrisA > 0.0) { vec3 t = rgb2hsl(uIrisC); c = mix(c, hsl2rgb(vec3(t.x, t.y * 0.8, clamp(luma(c) * 1.15 + 0.05, 0.0, 0.8))), ir * uIrisA * 0.65); }
+  // cernes
+  float ue = m2.b * (1.0 - m1.a) * uDark; L = luma(c);
+  c = mix(c, mix(vec3(L), c, 0.85) * 1.14 + 0.02, ue * 0.8);
+  // lèvres : rouge à lèvres + brillance
+  if (uLipA > 0.0 || uGloss > 0.0) { vec3 t = rgb2hsl(uLipC); L = luma(c);
+    c = mix(c, hsl2rgb(vec3(t.x, t.y, clamp(L * 0.85 + t.z * 0.3, 0.0, 1.0))), m1.g * uLipA * 0.85);
+    c += uGloss * m1.g * smoothstep(0.4, 0.8, L) * 0.3; }
+  // cheveux : éclaircir, couleur / dégradé, brillance
+  float hm = m2.r;
+  if (hm > 0.002) { L = luma(c);
+    float Ll = clamp(L * (1.0 + uHairL * 2.4) + uHairL * 0.05, 0.0, 1.0); vec3 cl = c * (Ll / max(L, 0.01));
+    vec3 tc = uHairC;
+    if (uOmbre > 0.5) { float t = clamp(((1.0 - uv.y) - uHairY.x) / max(uHairY.y - uHairY.x, 0.01), 0.0, 1.0); tc = mix(uHairC, uOmbreC, smoothstep(uOmbreP - uOmbreS, uOmbreP + uOmbreS, t)); }
+    vec3 col = clamp(tc * (Ll / max(luma(tc), 0.03)), 0.0, 1.0);
+    c = mix(c, mix(cl, col, uHairA), hm * max(uHairA, min(1.0, uHairL * 3.0)));
+    c += hm * uShine * smoothstep(0.3, 0.8, luma(c)) * 0.2; }
+  gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+}`;
+
+const RT = (() => {
+  let cv = null, gl = null, loc = {}, T = {}, last = {}, failed = false, maxVp = [4096, 4096], maxTex = 4096;
+  const UN = ['uImg', 'uM1', 'uM2', 'uDisp', 'uSize', 'uHairY', 'uMR', 'uDR', 'uDispK', 'uHasDisp', 'uHasMask', 'uSmooth', 'uSmR', 'uTone', 'uBright', 'uSkinT', 'uMatte', 'uTeeth',
+    'uEyeW', 'uEyeB', 'uDark', 'uIrisA', 'uLipA', 'uGloss', 'uHairA', 'uHairL', 'uOmbre', 'uOmbreP', 'uOmbreS', 'uHairSm', 'uHairR', 'uShine', 'uIrisC', 'uLipC', 'uHairC', 'uOmbreC'];
+  function init() {
+    if (gl && !gl.isContextLost()) return true; if (failed) return false;
+    try {
+      cv = document.createElement('canvas');
+      gl = cv.getContext('webgl', { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: false, depth: false, stencil: false });
+      if (!gl) { failed = true; return false; }
+      cv.addEventListener('webglcontextlost', e => { e.preventDefault(); gl = null; last = {}; }, false);
+      const sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+      const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, FX_VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, RT_FS)); gl.linkProgram(pr);
+      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+      gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const ap = gl.getAttribLocation(pr, 'aPos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+      UN.forEach(n => { loc[n] = gl.getUniformLocation(pr, n); });
+      ['img', 'm1', 'm2', 'disp'].forEach((k, i) => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t);
+        [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]].forEach(([a, b]) => gl.texParameteri(gl.TEXTURE_2D, a, b));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0])); T[k] = [t, i]; });
+      gl.uniform1i(loc.uImg, 0); gl.uniform1i(loc.uM1, 1); gl.uniform1i(loc.uM2, 2); gl.uniform1i(loc.uDisp, 3);
+      maxVp = gl.getParameter(gl.MAX_VIEWPORT_DIMS) || maxVp; maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || maxTex;
+      return true;
+    } catch (e) { console.warn('Retouche indisponible :', e); failed = true; gl = null; return false; }
+  }
+  const up = (k, src) => { if (last[k] === src) return; const [t, i] = T[k]; gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); last[k] = src; };
+  const hex3 = h => hex2rgb(h).map(v => v / 255);
+  // src : canvas à la taille de sortie ; mk : masques {m1,m2,rect,hairY} ; dp : carte de déplacement ; r : réglages
+  function render(src, mk, dp, r, faceW, out) {
+    if (!init()) return null;
+    let w = src.width, h = src.height; if (w > maxVp[0] || h > maxVp[1] || w > maxTex || h > maxTex) return null;
+    try {
+      up('img', src);
+      if (mk) { up('m1', mk.m1); up('m2', mk.m2); } if (dp) up('disp', dp.cv);
+      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+      gl.viewport(0, 0, w, h);
+      const f = (k, v) => gl.uniform1f(loc[k], v), n = v => (+v || 0) / 100, R = mk ? mk.rect : [0, 0, 1, 1], D = dp ? dp.rect : [0, 0, 1, 1];
+      gl.uniform2f(loc.uSize, w, h); gl.uniform4f(loc.uMR, R[0], 1 - R[1] - R[3], R[2], R[3]); gl.uniform4f(loc.uDR, D[0], 1 - D[1] - D[3], D[2], D[3]);
+      f('uHasMask', mk ? 1 : 0); f('uHasDisp', dp ? 1 : 0); f('uDispK', dp ? dp.k : 0);
+      f('uSmooth', n(r.smooth)); f('uSmR', Math.max(1.5, faceW * (0.006 + 0.03 * n(r.smoothR)))); f('uTone', n(r.tone)); f('uBright', n(r.bright)); f('uSkinT', n(r.skinT)); f('uMatte', n(r.matte));
+      f('uTeeth', n(r.teeth)); f('uEyeW', n(r.eyeW)); f('uEyeB', n(r.eyeB)); f('uDark', n(r.dark)); f('uIrisA', n(r.irisA)); f('uLipA', n(r.lipA)); f('uGloss', n(r.gloss));
+      f('uHairA', n(r.hairA)); f('uHairL', n(r.hairL)); f('uOmbre', r.ombre ? 1 : 0); f('uOmbreP', n(r.ombreP)); f('uOmbreS', Math.max(0.02, n(r.ombreS) * 0.5));
+      f('uHairSm', n(r.hairSm)); f('uHairR', Math.max(1.5, faceW * 0.02)); f('uShine', n(r.shine));
+      gl.uniform2f(loc.uHairY, mk ? mk.hairY[0] : 0, mk ? mk.hairY[1] : 1);
+      gl.uniform3fv(loc.uIrisC, hex3(r.irisC)); gl.uniform3fv(loc.uLipC, hex3(r.lipC)); gl.uniform3fv(loc.uHairC, hex3(r.hairC)); gl.uniform3fv(loc.uOmbreC, hex3(r.ombreC));
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      if (!out || out.width !== w || out.height !== h) out = mkCanvas(w, h);
+      const g = out.getContext('2d'); g.clearRect(0, 0, w, h); g.drawImage(cv, 0, 0);
+      return out;
+    } catch (e) { console.warn(e); return null; }
+  }
+  function release() { if (!gl) return; const one = mkCanvas(1, 1); try { up('img', one); } catch (e) { } last = {}; if (cv) { cv.width = 1; cv.height = 1; } }
+  return { render, release };
+})();
+
+// ----- chaîne de retouche d'une photo à une taille donnée -----
+// base : canvas de la photo à la taille voulue ; renvoie un canvas retouché (ou base si rien à faire)
+function rtMasks(ph, src) {
+  const key = [S.rt.hairTol, S.rt.hairExt, (ph.hairEdits || []).length, ph.hairEditsV || 0].join('|');
+  if (ph.rtm && ph.rtmKey === key) return ph.rtm;
+  ph.rtm = buildMasks(ph.face, src, S.rt, ph.hairEdits); ph.rtmKey = key; ph.hairOv = null;
+  return ph.rtm;
+}
+function rtApply(ph, base, maskSrc, out) {
+  const r = S.rt, w = base.width, h = base.height;
+  let src = healSpots(base, ph.spots);
+  const has = ph.face && ph.face.faces && ph.face.faces.length;
+  if (has && (rtWarpOn(r) || rtLocalOn(r))) {
+    const mk = rtLocalOn(r) ? rtMasks(ph, maskSrc || base) : null, dp = rtWarpOn(r) ? dispMap(ph.face, r, w, h) : null;
+    const fw = faceFrame(ph.face.faces[0], w, h).W;
+    const res = RT.render(src, mk, dp, r, fw, out && out !== base ? out : null);
+    if (res) { if (src !== base && src !== res) freeCanvas(src); src = res; }
+  }
+  if (has && r.wig) { if (src === base) { const c = mkCanvas(w, h); c.getContext('2d').drawImage(base, 0, 0); src = c; } ph.face.faces.forEach(f => drawWig(src.getContext('2d'), f, r, w, h)); }
+  return src;
+}
+
+// ===================== wigs.js (perruques dessinées, placées sur la tête grâce aux points du visage) =====================
+const WIGS = [['bob', 'Carré'], ['long', 'Long lisse'], ['wavy', 'Ondulé'], ['curly', 'Bouclé'], ['afro', 'Afro'], ['pixie', 'Court'], ['bun', 'Chignon']];
+// Demi-silhouette gauche (sommet → bas), en largeurs (u) et hauteurs (v) de visage, origine : haut du front
+const WIG_DEF = {
+  bob: { half: [[0, -0.52], [-0.24, -0.5], [-0.44, -0.41], [-0.58, -0.24], [-0.66, 0.02], [-0.69, 0.35], [-0.68, 0.72], [-0.62, 1.04]], fringe: 0.27, n: 1500 },
+  long: { half: [[0, -0.52], [-0.24, -0.5], [-0.44, -0.41], [-0.57, -0.23], [-0.63, 0.05], [-0.66, 0.45], [-0.68, 1.0], [-0.69, 1.6], [-0.63, 2.1]], n: 1900 },
+  wavy: { half: [[0, -0.54], [-0.26, -0.52], [-0.47, -0.43], [-0.62, -0.24], [-0.71, 0.05], [-0.76, 0.45], [-0.77, 0.95], [-0.7, 1.55]], wave: 0.035, fringe: 0.2, n: 1800 },
+  curly: { half: [[0, -0.66], [-0.35, -0.62], [-0.64, -0.45], [-0.82, -0.12], [-0.9, 0.3], [-0.9, 0.8], [-0.8, 1.3]], curly: 0.035, n: 600 },
+  afro: { half: [[0, -0.98], [-0.45, -0.9], [-0.82, -0.6], [-1.0, -0.15], [-1.0, 0.3], [-0.86, 0.7], [-0.62, 0.92]], curly: 0.03, n: 800 },
+  pixie: { half: [[0, -0.52], [-0.25, -0.5], [-0.45, -0.4], [-0.57, -0.2], [-0.6, 0.05], [-0.58, 0.28], [-0.53, 0.42]], fringe: 0.15, slope: 0.1, n: 1000 },
+  bun: { half: [[0, -0.48], [-0.24, -0.46], [-0.43, -0.37], [-0.54, -0.18], [-0.57, 0.08], [-0.55, 0.28], [-0.5, 0.38]], bun: [0, -0.66, 0.2], n: 900 },
+};
+const OVAL_L = [10, 109, 67, 103, 54, 21, 162, 127, 234, 93, 132, 58, 172], OVAL_R = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397];
+
+function resample(pts, m) {
+  const d = [0]; for (let i = 1; i < pts.length; i++) d.push(d[i - 1] + vlen(vsub(pts[i], pts[i - 1])));
+  const T = d[d.length - 1] || 1, out = []; let j = 0;
+  for (let k = 0; k < m; k++) { const s = T * k / (m - 1); while (j < pts.length - 2 && d[j + 1] < s) j++; const t = (s - d[j]) / ((d[j + 1] - d[j]) || 1); out.push(vadd(pts[j], vmul(vsub(pts[j + 1], pts[j]), clamp(t, 0, 1)))); }
+  return out;
+}
+function smoothPath(g, pts, close) {
+  g.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) { const m = vmul(vadd(pts[i], pts[i + 1]), 0.5); g.quadraticCurveTo(pts[i][0], pts[i][1], m[0], m[1]); }
+  const l = pts[pts.length - 1]; g.lineTo(l[0], l[1]); if (close) g.closePath();
+}
+
+function drawWig(g, f, r, W, H) {
+  const D = WIG_DEF[r.wig]; if (!D) return;
+  const F = faceFrame(f, W, H), sz = (r.wigSize || 100) / 100, U = F.W, V = F.H;
+  const T0 = vadd(F.top, vadd(vmul(F.x, (r.wigX || 0) / 100 * 0.3 * U), vmul(F.y, (r.wigY || 0) / 100 * 0.3 * V)));
+  const L2P = ([u, v]) => { const uu = u * sz * 0.94, vv = ((v < 0 ? v * 0.9 : v) + 0.1) * sz - 0.1; return vadd(T0, vadd(vmul(F.x, uu * U), vmul(F.y, vv * V))); };
+  const P2L = p => { const d = vsub(p, F.top); return [vdot(d, F.x) / U, vdot(d, F.y) / V]; };
+  const bottom = D.half[D.half.length - 1][1];
+  // contour intérieur (ligne des cheveux) : ovale du visage légèrement élargi, frange éventuelle, puis le long du cou
+  const inner = side => {
+    const idx = side < 0 ? OVAL_L : OVAL_R; let pts = idx.map(i => { const p = lmPt(f, i, W, H); return vadd(p, vmul(vsub(p, F.c), 0.05)); }).map(P2L);
+    if (D.fringe != null) pts = pts.map(([u, v]) => [u, Math.max(v, Math.abs(u) < 0.47 ? D.fringe + (D.slope || 0) * u * side * -1 + 0.08 * u * u : v)]);
+    pts = pts.filter(p => p[1] <= bottom + 0.02);
+    const last = pts[pts.length - 1]; if (bottom > last[1] + 0.05) pts.push([last[0] * 0.92, bottom]);
+    return pts;
+  };
+  const outerL = D.half.map(([u, v]) => [u, v]), outerR = D.half.map(([u, v]) => [-u, v]);
+  const inL = inner(-1), inR = inner(1);
+  const sil = [...outerL.slice().reverse(), ...outerR.slice(1), ...inR.slice().reverse(), ...inL].map(L2P);
+  // calque de la perruque (résolution limitée)
+  let x0 = W, y0 = H, x1 = 0, y1 = 0; const bunPts = D.bun ? [[D.bun[0] - D.bun[2], D.bun[1] - D.bun[2]], [D.bun[0] + D.bun[2], D.bun[1] + D.bun[2]]].map(L2P) : [];
+  sil.concat(bunPts).forEach(p => { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); });
+  const pad = U * 0.08; x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+  const k = Math.min(1, 1400 / Math.max(x1 - x0, y1 - y0)), cv = mkCanvas((x1 - x0) * k, (y1 - y0) * k), c = cv.getContext('2d');
+  c.setTransform(k, 0, 0, k, -x0 * k, -y0 * k); c.lineCap = 'round'; c.lineJoin = 'round';
+  const base = r.wigC || '#2e1d14', R = rng(r.wig.length * 977 + 13), lw = U * 0.003;
+  const silPath = () => { c.beginPath(); smoothPath(c, sil, true); if (D.bun) { const b = L2P([D.bun[0], D.bun[1]]); c.moveTo(b[0] + D.bun[2] * U * sz, b[1]); c.arc(b[0], b[1], D.bun[2] * U * sz, 0, Math.PI * 2); } };
+  c.save(); silPath(); c.clip('nonzero');
+  c.fillStyle = shade(base, -0.2); c.fillRect(x0, y0, x1 - x0, y1 - y0);
+  // mèches regroupées par teinte (quelques tracés seulement : rapide même pour des milliers de cheveux)
+  const hi = (r.wigHi ?? 30) / 100, dens = clamp(U * k / 300, 0.35, 2.2);
+  c.globalAlpha = 0.22; c.globalCompositeOperation = 'overlay'; c.drawImage(noiseTex(), x0, y0, x1 - x0, y1 - y0); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1;
+  const B = [-0.32, -0.22, -0.13, -0.05, 0.03, 0.1].map(t => ({ c: shade(base, t), a: 0.38, p: new Path2D() })).concat([0.26, 0.4].map(t => ({ c: shade(base, t), a: 0.42, p: new Path2D() })));
+  const pick = () => R() < hi * 0.25 ? B[6 + Math.floor(R() * 2)] : B[Math.floor(R() * 6)];
+  if (D.curly) {
+    const n = Math.round(D.n * 6 * dens);
+    for (let i = 0; i < n; i++) {
+      const u = (R() * 2 - 1) * 1.05, v = -1 + R() * (bottom + 1.05), q = L2P([u, v]), rr = (D.curly * (0.6 + R() * 0.9)) * U * sz, a = R() * 6.28, b = pick();
+      b.p.moveTo(q[0] + Math.cos(a) * rr, q[1] + Math.sin(a) * rr); b.p.arc(q[0], q[1], rr, a, a + 3.6 + R() * 2);
+    }
+  } else {
+    const M = 22, sides = [-1, 1].map(sg => ({ o: resample((sg < 0 ? outerL : outerR).map(L2P), M), i: resample((sg < 0 ? inL : inR).map(L2P), M) })), n = Math.round(D.n * dens);
+    sides.forEach(S2 => { S2.nrm = S2.o.map((_, j) => vnorm([-(S2.o[Math.min(M - 1, j + 1)][1] - S2.o[Math.max(0, j - 1)][1]), S2.o[Math.min(M - 1, j + 1)][0] - S2.o[Math.max(0, j - 1)][0]])); });
+    for (let i = 0; i < n; i++) {
+      const S2 = sides[i % 2], t = Math.sqrt(R()), ph = R() * 6.28, wv = (D.wave || 0.006) * U * sz * (0.6 + R()), fr = 2 + R() * 2.5, b = pick(), pts = [];
+      const end = Math.round(M * (0.72 + R() * 0.28)), jit = (R() - 0.5) * 0.08;
+      for (let j = 0; j < end; j++) { const tt = clamp(t + jit * Math.sin(j / M * 3.1 + ph), 0, 1), a = S2.i[j], o = S2.o[j], q = vadd(a, vmul(vsub(o, a), tt)); pts.push(vadd(q, vmul(S2.nrm[j], Math.sin(j / M * Math.PI * fr + ph) * wv * (j / M)))); }
+      if (pts.length < 3) continue;
+      smoothPath(b.p, pts, false);
+    }
+    if (D.fringe != null) for (let i = 0; i < n * 0.35; i++) {
+      const u = (R() * 2 - 1) * 0.5, a = L2P([u * 0.6, -0.42]), e = L2P([u + (R() - 0.5) * 0.06, D.fringe + (D.slope || 0) * -u + 0.08 * u * u + (R() - 0.3) * 0.05]), m = vadd(vmul(vadd(a, e), 0.5), vmul(F.x, u * U * 0.08)), b = pick();
+      b.p.moveTo(a[0], a[1]); b.p.quadraticCurveTo(m[0], m[1], e[0], e[1]);
+    }
+  }
+  if (D.bun) { const bc = L2P([D.bun[0], D.bun[1]]), br = D.bun[2] * U * sz; for (let i = 0; i < 200 * dens; i++) { const rr = br * (0.2 + R() * 0.8), a = R() * 6.28, b = pick(); b.p.moveTo(bc[0] + Math.cos(a) * rr, bc[1] + Math.sin(a) * rr); b.p.arc(bc[0], bc[1], rr, a, a + 2 + R() * 2); } }
+  B.slice(0, 3).forEach(b => { c.globalAlpha = 0.07; c.strokeStyle = b.c; c.lineWidth = lw * 3.5; c.stroke(b.p); }); // volume
+  B.forEach(b => { c.globalAlpha = b.a; c.strokeStyle = b.c; c.lineWidth = lw * (D.curly ? 1.2 : 0.85); c.stroke(b.p); }); // mèches
+  // reflet anisotrope (bande claire qui suit la courbure du crâne)
+  const band = [...outerL.slice().reverse(), ...outerR.slice(1)].filter(q => q[1] < 0.15).map(([u, v]) => L2P([u * 0.86, v * 0.8 - 0.02]));
+  if (band.length > 2) [0.16, 0.1, 0.05].forEach((w, i) => { c.globalAlpha = (0.05 + 0.08 * hi) * (i + 1) / 2; c.strokeStyle = shade(base, 0.6); c.lineWidth = U * w; c.beginPath(); smoothPath(c, band, false); c.stroke(); });
+  // volume : reflet sur le dessus, ombre en bas et au bord du visage
+  c.globalAlpha = 1;
+  const top = L2P([0.1, -0.35]), rg = c.createRadialGradient(top[0], top[1], 0, top[0], top[1], U * 0.45 * sz);
+  rg.addColorStop(0, `rgba(255,255,255,${0.1 + 0.15 * hi})`); rg.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = rg; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+  const a1 = L2P([0, -0.2]), a2 = L2P([0, bottom]), lg = c.createLinearGradient(a1[0], a1[1], a2[0], a2[1]);
+  lg.addColorStop(0, 'rgba(0,0,0,0)'); lg.addColorStop(1, 'rgba(0,0,0,0.3)'); c.fillStyle = lg; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+  c.strokeStyle = 'rgba(0,0,0,0.3)'; c.lineWidth = U * 0.05; c.beginPath(); smoothPath(c, [...inR.slice().reverse(), ...inL].map(L2P), false); c.stroke();
+  c.restore();
+  // mèches folles sur le bord extérieur (un seul tracé)
+  const fl = new Path2D();
+  for (let i = 0; i < 90 * dens; i++) {
+    const side = i % 2 ? outerR : outerL, q = resample(side.map(L2P), 20)[2 + Math.floor(R() * 16)], d = vnorm(vsub(q, F.c));
+    const e = vadd(q, vmul(vadd(d, vmul(F.y, 0.8)), U * (0.02 + R() * 0.05))); fl.moveTo(q[0], q[1]); fl.quadraticCurveTo(q[0] + d[0] * U * 0.02, q[1] + d[1] * U * 0.02, e[0], e[1]);
+  }
+  c.globalAlpha = 0.35; c.strokeStyle = shade(base, 0.05); c.lineWidth = lw * 0.6; c.stroke(fl); c.globalAlpha = 1;
+  // bords adoucis : masque flou de la silhouette (astuce de l'ombre décalée)
+  const mk2 = mkCanvas(cv.width, cv.height), mc = mk2.getContext('2d'), OFF = (x1 - x0) * 2;
+  mc.setTransform(k, 0, 0, k, (-x0 - OFF) * k, -y0 * k); mc.shadowColor = '#000'; mc.shadowBlur = Math.max(1, U * 0.01 * k); mc.shadowOffsetX = OFF * k;
+  mc.beginPath(); smoothPath(mc, sil, true); if (D.bun) { const bc = L2P([D.bun[0], D.bun[1]]); mc.moveTo(bc[0] + D.bun[2] * U * sz, bc[1]); mc.arc(bc[0], bc[1], D.bun[2] * U * sz, 0, Math.PI * 2); } mc.fill();
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'destination-in'; c.drawImage(mk2, 0, 0); freeCanvas(mk2);
+  // ombre douce projetée sur le front, puis la perruque
+  g.save(); const OF = (x1 - x0) * 2; g.shadowColor = 'rgba(0,0,0,0.42)'; g.shadowBlur = U * 0.045 * (g.getTransform ? Math.hypot(g.getTransform().a, g.getTransform().b) : 1); g.shadowOffsetX = 0; g.shadowOffsetY = 0;
+  g.translate(-OF, 0); g.shadowOffsetX = OF * (g.getTransform ? Math.hypot(g.getTransform().a, g.getTransform().b) : 1); g.shadowOffsetY = U * 0.012;
+  g.beginPath(); smoothPath(g, sil, true); g.fillStyle = '#000'; g.fill(); g.restore();
+  g.drawImage(cv, x0, y0, x1 - x0, y1 - y0);
+  freeCanvas(cv);
+}
+
 // ===================== app.js (état, aperçu, interactions, export) =====================
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const KEEP_KEYS = ['t1', 't2', 't3', 't4', 'logo', 'logoTint', 'filmText'];
 const S = {
   photos: [], cur: -1, frame: { ...DEF, ...PRESETS.find(p => p.id === 'g-noir').p }, layers: [], sel: null,
   exp: { fmt: 'jpeg', q: 92, size: 'orig' }, presetId: 'g-noir', group: 'gallery', tab: 'frames', sub: null, styles: [],
   adj: normAdj({}), fxSub: 'presets', fxGroup: 'portrait', hslBand: 0, gradeZone: 'sh',
+  rt: normRt({}), rtMode: 'face', rtSub: 'auto', rtTool: '', rtShowHair: false, rtSpot: 30, rtBrush: 35,
 };
 const view = $('#view'), vg = view.getContext('2d'), base = mkCanvas(1, 1);
 let VL = null, VS = 1, comparing = false, raf = 0, baseKey = '';
@@ -1450,6 +2011,7 @@ function releaseFull(ph) {
   if (ph.img) { ph.img.src = ''; ph.img = null; }
   if (ph.url) { URL.revokeObjectURL(ph.url); ph.url = null; }
   if (ph.fxCv) { freeCanvas(ph.fxCv); ph.fxCv = null; ph.fxKey = ''; }
+  if (ph.rtCv) { freeCanvas(ph.rtCv); ph.rtCv = null; ph.rtKey = ''; }
 }
 async function selectPhoto(i) {
   if (i === S.cur || !S.photos[i]) return;
@@ -1502,7 +2064,7 @@ function renderView() {
   if (view.width !== cw || view.height !== ch) { view.width = cw; view.height = ch; }
   view.style.width = cw / dpr + 'px'; view.style.height = ch / dpr + 'px';
   view.style.transform = `translateY(${-stripH / 2}px)`;
-  const key = JSON.stringify(P) + adjKey(S.adj) + ph.id + cw + 'x' + ch + '|' + sigVersion + '|' + S.photos.indexOf(ph);
+  const key = JSON.stringify(P) + adjKey(S.adj) + (rtOn(S.rt, ph) ? rtViewKey(ph) : '') + ph.id + cw + 'x' + ch + '|' + sigVersion + '|' + S.photos.indexOf(ph);
   if (key !== baseKey || base.width !== cw || base.height !== ch) {
     base.width = cw; base.height = ch;
     const bg = ctx2d(base); bg.setTransform(cw / L.W, 0, 0, ch / L.H, 0, 0);
@@ -1515,7 +2077,7 @@ function renderView() {
   } else {
     vg.drawImage(base, 0, 0);
     vg.setTransform(s, 0, 0, s, 0, 0); drawLayers(vg, L, S.layers, s, toks);
-    vg.setTransform(1, 0, 0, 1, 0, 0); drawSelection(vg, L, s, toks, dpr);
+    vg.setTransform(1, 0, 0, 1, 0, 0); drawSelection(vg, L, s, toks, dpr); rtOverlay(vg, L, s);
   }
   VL = L; VS = s;
 }
@@ -1546,6 +2108,7 @@ function toUnits(e) { const r = view.getBoundingClientRect(), k = view.width / r
 function snapRot(r) { r = ((r + 180) % 360 + 360) % 360 - 180; for (const t of [-180, -90, 0, 90, 180]) if (Math.abs(r - t) < 3) return t; return Math.round(r * 10) / 10; }
 view.addEventListener('pointerdown', e => {
   if (!VL || comparing) return;
+  if (rtPointerDown(e)) { try { view.setPointerCapture(e.pointerId); } catch (_) { } return; }
   try { view.setPointerCapture(e.pointerId); } catch (_) { }
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (ptrs.size === 2 && drag && drag.ly) {
@@ -1576,6 +2139,7 @@ view.addEventListener('pointerdown', e => {
   } else { drag = null; if (S.tab === 'sign' && S.sel) { S.sel = null; renderSign(); invalidate(); } }
 });
 view.addEventListener('pointermove', e => {
+  if (rtPointerMove(e)) return;
   if (!ptrs.has(e.pointerId)) return;
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (!drag || !drag.ly) return;
@@ -1599,6 +2163,7 @@ view.addEventListener('pointermove', e => {
   }
 });
 const endPtr = e => {
+  if (rtPointerUp()) return;
   ptrs.delete(e.pointerId);
   if (!ptrs.size && drag) { drag = null; commit(); invalidate(); renderLayerPos(); }
 };
@@ -1630,20 +2195,20 @@ $('#btnCompare').addEventListener('contextmenu', e => e.preventDefault());
 
 // ---------- historique ----------
 const H = { stack: [], i: -1 };
-const snapshot = () => JSON.stringify({ frame: S.frame, layers: S.layers, presetId: S.presetId, adj: S.adj });
+const snapshot = () => JSON.stringify({ frame: S.frame, layers: S.layers, presetId: S.presetId, adj: S.adj, rt: S.rt });
 function commit() {
   const sn = snapshot(); if (H.stack[H.i] === sn) return;
   H.stack.length = H.i + 1; H.stack.push(sn); if (H.stack.length > 80) H.stack.shift(); H.i = H.stack.length - 1;
   persist(); updUndo();
 }
 function restoreSnap(sn) {
-  const o = JSON.parse(sn); S.frame = o.frame; S.layers = o.layers; S.presetId = o.presetId; S.adj = normAdj(o.adj);
+  const o = JSON.parse(sn); S.frame = o.frame; S.layers = o.layers; S.presetId = o.presetId; S.adj = normAdj(o.adj); S.rt = normRt(o.rt);
   if (!selLayer()) S.sel = null; refreshAll(); persist();
 }
 function undo() { if (H.i > 0) { H.i--; restoreSnap(H.stack[H.i]); updUndo(); } }
 function redo() { if (H.i < H.stack.length - 1) { H.i++; restoreSnap(H.stack[H.i]); updUndo(); } }
 function updUndo() { $('#btnUndo').disabled = H.i <= 0; $('#btnRedo').disabled = H.i >= H.stack.length - 1; }
-function persist() { LS.set('encadreur.v1', { frame: S.frame, layers: S.layers, exp: S.exp, presetId: S.presetId, group: S.group, adj: S.adj, fxGroup: S.fxGroup }); }
+function persist() { LS.set('encadreur.v1', { frame: S.frame, layers: S.layers, exp: S.exp, presetId: S.presetId, group: S.group, adj: S.adj, fxGroup: S.fxGroup, rt: S.rt }); }
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
 
 // ---------- export ----------
@@ -1672,18 +2237,26 @@ async function renderOut(ph, img) {
   if (jpeg) { g.fillStyle = P.bg; g.fillRect(0, 0, cv.width, cv.height); }
   // Filtres appliqués à la résolution de sortie (réduction préalable de qualité si besoin)
   let src = img, tmp = null;
-  if (!isNeutral(S.adj)) {
+  const needRt = rtOn(S.rt, ph), needFx = !isNeutral(S.adj);
+  if (needRt || needFx) {
     const k = cv.width / L.W, tw = Math.max(1, Math.round(ph.w * k)), th = Math.max(1, Math.round(ph.h * k));
-    const base = tw < ph.w * 0.98 ? (tmp = scaled(img, Math.max(tw, th))) : img;
-    src = FX.render(base, blurOf(ph, ph.thumb), tw, th, S.adj, 'gl') || img;
-    if (tmp) { freeCanvas(tmp); tmp = null; }
+    let base = tw < ph.w * 0.98 ? (tmp = scaled(img, Math.max(tw, th))) : img;
+    if (needRt) { // retouche visage / cheveux (détection faite à la volée pour les autres photos du lot)
+      const det = ph.prev || (ph.__det = ph.__det || scaled(img, 2048));
+      try { await ensureFace(ph, det); } catch (e) { }
+      const r1 = rtApply(ph, base, det);
+      if (r1 !== base) { if (tmp && tmp !== r1) freeCanvas(tmp); tmp = r1; base = r1; }
+      RT.release(); if (ph.__det && !ph.prev) { freeCanvas(ph.__det); ph.__det = null; }
+    }
+    src = needFx ? (FX.render(base, blurOf(ph, ph.thumb), tw, th, S.adj, 'gl') || base) : base;
+    if (tmp && src !== tmp) { freeCanvas(tmp); tmp = null; }
   }
   g.setTransform(cv.width / L.W, 0, 0, cv.height / L.H, 0, 0);
   drawFrame(g, L, P, src, toks);
   drawLayers(g, L, S.layers, cv.width / L.W, toks);
   const blob = await new Promise(res => cv.toBlob(res, jpeg ? 'image/jpeg' : 'image/png', S.exp.q / 100));
   const out = { blob, w: cv.width, h: cv.height, name: outName(ph) };
-  freeCanvas(cv); if (src !== img) FX.release();
+  freeCanvas(cv); if (src !== img) { FX.release(); if (tmp) freeCanvas(tmp); }
   if (!blob) throw new Error('blob');
   return out;
 }
@@ -1803,10 +2376,11 @@ let myFx = LS.get('encadreur.myfx', []), _fxWarned = false;
 // ---------- sources filtrées (aperçu, miniatures) ----------
 function fxWarn() { if (!_fxWarned) { _fxWarned = true; toast('Les filtres demandent WebGL, indisponible sur ce navigateur.'); } }
 function fxSrc(ph) {
-  if (isNeutral(S.adj)) return ph.prev;
-  const key = JSON.stringify(S.adj);
+  const base = procBase(ph);
+  if (isNeutral(S.adj)) return base;
+  const key = JSON.stringify(S.adj) + '|' + (base.__k || 'p');
   if (ph.fxKey === key && ph.fxCv) return ph.fxCv;
-  const out = FX.render(ph.prev, blurOf(ph, ph.thumb), ph.prev.width, ph.prev.height, S.adj, ph.fxCv);
+  const out = FX.render(base, blurOf(ph, ph.thumb), base.width, base.height, S.adj, ph.fxCv);
   if (!out) { fxWarn(); return ph.prev; }
   out.__k = uid(); ph.fxCv = out; ph.fxKey = key; return out;
 }
@@ -1937,6 +2511,186 @@ function fxGradeUI(box) {
   fxResetBtn(box, 'Réinitialiser la balance des couleurs', () => { S.adj.grade = cloneAdj(ADJ0.grade); });
 }
 
+// ===================== rtpanel.js (onglet Retouche : Visage / Cheveux) =====================
+const RT_SUBS = {
+  face: [['auto', 'Auto'], ['skin', 'Peau'], ['eyes', 'Yeux'], ['mouth', 'Bouche'], ['nose', 'Nez'], ['shape', 'Forme']],
+  hair: [['hsel', 'Sélection'], ['hcolor', 'Couleur'], ['hombre', 'Dégradé'], ['hsmooth', 'Lissage'], ['wigs', 'Perruques']],
+};
+const RT_SL = {
+  skin: [['smooth', 'Lissage de la peau', 0, 100], ['smoothR', 'Douceur du lissage', 0, 100, 50], ['tone', 'Uniformiser le teint', 0, 100], ['bright', 'Éclat', 0, 100], ['skinT', 'Teinte de peau (froide ↔ chaude)'], ['matte', 'Anti-brillance', 0, 100]],
+  eyes: [['eyeSize', 'Taille des yeux'], ['eyeDist', 'Écartement'], ['eyeW', 'Blanc des yeux', 0, 100], ['eyeB', 'Éclat de l’iris', 0, 100], ['dark', 'Cernes', 0, 100], ['irisA', 'Couleur des iris', 0, 100]],
+  mouth: [['teeth', 'Blanchir les dents', 0, 100], ['lipA', 'Couleur des lèvres', 0, 100], ['gloss', 'Brillance des lèvres', 0, 100], ['lipSize', 'Volume des lèvres'], ['smile', 'Sourire'], ['mouthW', 'Largeur de la bouche']],
+  nose: [['noseW', 'Largeur du nez'], ['noseSize', 'Taille du nez'], ['noseTip', 'Pointe du nez (bas ↔ haut)']],
+  shape: [['slim', 'Largeur du visage'], ['jaw', 'Mâchoire'], ['chin', 'Menton (court ↔ long)'], ['cheeks', 'Rondeur des joues'], ['forehead', 'Front (bas ↔ haut)']],
+  hcolor: [['hairA', 'Intensité de la couleur', 0, 100], ['hairL', 'Éclaircir', 0, 100], ['shine', 'Brillance', 0, 100]],
+  hsmooth: [['hairSm', 'Lissage (anti-frisottis)', 0, 100], ['shine', 'Brillance', 0, 100]],
+};
+const PAL = {
+  irisC: [['#6b4423', 'Brun'], ['#8a6a2f', 'Noisette'], ['#4f8a4a', 'Vert'], ['#4f86c6', 'Bleu'], ['#7f8c99', 'Gris'], ['#c08a2b', 'Ambre'], ['#7a52a8', 'Violet']],
+  lipC: [['#b3264d', 'Framboise'], ['#c62828', 'Rouge'], ['#e57373', 'Corail'], ['#d4818f', 'Rose'], ['#b9786a', 'Nude'], ['#7b1f3a', 'Bordeaux'], ['#6a2c5a', 'Prune']],
+  hairC: [['#1b1512', 'Noir'], ['#3b2416', 'Brun'], ['#6b4226', 'Châtain'], ['#7a3b1e', 'Auburn'], ['#a5522a', 'Cuivré'], ['#c8964f', 'Blond miel'], ['#e6d3a8', 'Platine'], ['#b5372b', 'Roux'], ['#6e1f3d', 'Bordeaux'], ['#d77ba1', 'Rose'], ['#6c4bb6', 'Violet'], ['#2f5fb3', 'Bleu']],
+  ombreC: [['#e6d3a8', 'Platine'], ['#c8964f', 'Miel'], ['#a5522a', 'Cuivré'], ['#d77ba1', 'Rose'], ['#9b7fe0', 'Lilas'], ['#6fb0e8', 'Bleu glacier'], ['#b5372b', 'Roux']],
+  wigC: [['#1b1512', 'Noir'], ['#3b2416', 'Brun'], ['#6b4226', 'Châtain'], ['#a5522a', 'Cuivré'], ['#c8964f', 'Blond'], ['#e6d3a8', 'Platine'], ['#b5372b', 'Roux'], ['#d77ba1', 'Rose'], ['#6c4bb6', 'Violet'], ['#9aa3ad', 'Argent']],
+};
+const RT_AUTO = [
+  ['Naturel', { smooth: 35, tone: 25, eyeW: 30, eyeB: 20, teeth: 30, dark: 25 }],
+  ['Éclat', { smooth: 45, tone: 35, bright: 30, matte: 30, eyeW: 40, eyeB: 35, teeth: 45, dark: 35 }],
+  ['Glamour', { smooth: 60, tone: 40, bright: 25, matte: 40, eyeSize: 15, eyeW: 45, eyeB: 40, teeth: 50, dark: 40, lipA: 35, lipC: '#a8234a', gloss: 30, slim: -20, noseW: -15 }],
+  ['Doux', { smooth: 70, smoothR: 70, tone: 50, bright: 20, dark: 30, matte: 25 }],
+];
+const RT_FACE_KEYS = Object.keys(RT0).filter(k => !/^(hair|ombre|shine|wig)/.test(k));
+
+// ----- détection à la demande -----
+function startDetect(ph, force) {
+  if (!ph || ph.faceBusy || (ph.face && !force)) return;
+  ph.faceBusy = true; ph.faceErr = ''; if (S.tab === 'rt') renderRt();
+  ensureFace(ph).then(() => { ph.faceBusy = false; baseKey = ''; invalidate(); if (S.tab === 'rt') renderRt(); })
+    .catch(e => {
+      ph.faceBusy = false; ph.faceErr = e && e.message === 'file' ? 'file' : 'load';
+      if (S.tab === 'rt') renderRt();
+    });
+}
+function procBase(ph) {
+  if (!rtOn(S.rt, ph)) return ph.prev;
+  if (!ph.face) { startDetect(ph); if (!(ph.spots && ph.spots.length)) return ph.prev; }
+  const key = JSON.stringify(S.rt) + '|' + JSON.stringify(ph.spots || []) + '|' + (ph.hairEditsV || 0) + '|' + (ph.face ? ph.face.faces.length : -1);
+  if (ph.rtKey === key && ph.rtCv) return ph.rtCv;
+  const out = rtApply(ph, ph.prev, ph.prev, ph.rtCv);
+  if (out !== ph.prev) { out.__k = uid(); ph.rtCv = out; } else ph.rtCv = null;
+  ph.rtKey = key; return out;
+}
+const rtViewKey = ph => JSON.stringify(S.rt) + (ph.spots || []).length + '|' + (ph.hairEditsV || 0) + '|' + (ph.face ? ph.face.faces.length : 'n');
+
+// ----- interface -----
+function rtStatusHtml(ph) {
+  if (!ph) return '<div class="exif">Ajoutez une photo de visage pour commencer.</div>';
+  if (ph.faceBusy) return '<div class="exif"><i class="spin"></i> Analyse du visage… (le premier chargement télécharge les modèles, ~16 Mo)</div>';
+  if (ph.faceErr === 'file') return '<div class="callout">La retouche du visage fonctionne avec l’app en ligne (GitHub Pages ou installée), pas avec le fichier index.html ouvert directement.</div>';
+  if (ph.faceErr) return '<div class="callout">Les modèles de détection n’ont pas pu se charger. Connectez-vous à Internet pour le premier chargement, puis <button class="linkbtn" data-a="retry">réessayez</button>.</div>';
+  if (!ph.face) return '<div class="exif">Analyse en attente…</div>';
+  const n = ph.face.faces.length;
+  return `<div class="exif">${n ? `✓ ${n} visage${n > 1 ? 's' : ''} détecté${n > 1 ? 's' : ''} — les réglages s’appliquent à ${n > 1 ? 'tous' : 'ce visage'}.` : 'Aucun visage détecté sur cette photo. La sélection des cheveux et le correcteur restent utilisables à la main.'}</div>`;
+}
+function renderRt() {
+  const ph = curPhoto(); if (ph && !ph.face && !ph.faceErr) startDetect(ph);
+  const mode = $('#rtMode');
+  mode.innerHTML = [['face', 'Visage'], ['hair', 'Cheveux']].map(([k, n]) => `<button data-m="${k}" class="${S.rtMode === k ? 'on' : ''}">${n}</button>`).join('');
+  mode.querySelectorAll('button').forEach(b => b.onclick = () => { S.rtMode = b.dataset.m; S.rtSub = RT_SUBS[S.rtMode][0][0]; S.rtTool = ''; renderRt(); invalidate(); });
+  const subs = RT_SUBS[S.rtMode]; if (!subs.some(s => s[0] === S.rtSub)) S.rtSub = subs[0][0];
+  const st = $('#rtSubtabs');
+  st.innerHTML = subs.map(([k, n]) => `<button data-sub="${k}" class="${k === S.rtSub ? 'on' : ''}">${n}</button>`).join('');
+  st.querySelectorAll('button').forEach(b => b.onclick = () => { S.rtSub = b.dataset.sub; if (!/^(skin|hsel)$/.test(S.rtSub)) S.rtTool = ''; renderRt(); invalidate(); });
+  const box = $('#rtBody'); box.innerHTML = rtStatusHtml(ph);
+  const rb = box.querySelector('[data-a=retry]'); if (rb) rb.onclick = () => startDetect(ph, true);
+  const sl = list => list.forEach(([k, l, mn = -100, mx = 100, neutral = RT0[k]]) => fxRange(box, l, () => S.rt[k], v => { S.rt[k] = v; }, mn, mx, 1, '', neutral));
+  const sw = (label, key) => { const d = document.createElement('div'); d.className = 'ctl'; d.innerHTML = `<div class="ctl-h"><label>${label}</label></div>`;
+    const row = document.createElement('div'); row.className = 'sw-row';
+    PAL[key].forEach(([c, n]) => { const b = document.createElement('button'); b.className = 'sw' + (S.rt[key] === c ? ' on' : ''); b.style.background = c; b.title = n;
+      b.onclick = () => { S.rt[key] = c; row.querySelectorAll('.sw').forEach(x => x.classList.toggle('on', x === b)); onPick(key); invalidate(); commit(); }; row.appendChild(b); });
+    const cu = document.createElement('label'); cu.className = 'sw sw-custom'; cu.title = 'Autre couleur'; const ci = document.createElement('input'); ci.type = 'color'; ci.value = S.rt[key];
+    ci.oninput = () => { S.rt[key] = ci.value; onPick(key); invalidate(); }; ci.onchange = commit; cu.appendChild(ci); row.appendChild(cu); d.appendChild(row); box.appendChild(d); };
+  const onPick = key => { const need = { irisC: 'irisA', lipC: 'lipA', hairC: 'hairA' }[key]; if (need && !S.rt[need]) { S.rt[need] = 60; renderRt(); } };
+  const btnRow = (items) => { const r = document.createElement('div'); r.className = 'row-btns'; items.forEach(([t, fn, cls]) => { const b = document.createElement('button'); b.className = 'btn ' + (cls || 'sec'); b.textContent = t; b.onclick = fn; r.appendChild(b); }); box.appendChild(r); return r; };
+  const tool = (label, modes) => { const d = document.createElement('div'); d.className = 'ctl'; d.innerHTML = `<div class="ctl-h"><label>${label}</label></div><div class="seg">${modes.map(([k, n]) => `<button data-t="${k}" class="${(S.rtTool || '') === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+    d.querySelectorAll('button').forEach(b => b.onclick = () => { S.rtTool = b.dataset.t; renderRt(); invalidate(); }); box.appendChild(d); };
+  switch (S.rtSub) {
+    case 'auto': {
+      box.insertAdjacentHTML('beforeend', '<div class="sec-h" style="margin-top:6px">Retouche en un geste</div>');
+      const g = document.createElement('div'); g.className = 'seg'; g.style.marginBottom = '6px';
+      RT_AUTO.forEach(([n, v]) => { const b = document.createElement('button'); b.textContent = n; b.onclick = () => { RT_FACE_KEYS.forEach(k => { S.rt[k] = RT0[k]; }); Object.assign(S.rt, v); commit(); invalidate(); renderRt(); toast(`Retouche « ${n} » appliquée`); }; g.appendChild(b); });
+      box.appendChild(g);
+      box.insertAdjacentHTML('beforeend', '<p class="note">Chaque réglage reste modifiable dans Peau, Yeux, Bouche, Nez et Forme. Le bouton Comparer (en haut) montre l’original.</p>');
+      btnRow([['Réinitialiser le visage', () => { RT_FACE_KEYS.forEach(k => { S.rt[k] = RT0[k]; }); if (ph) ph.spots = []; commit(); invalidate(); renderRt(); }]]);
+      break;
+    }
+    case 'skin':
+      sl(RT_SL.skin);
+      tool('Correcteur d’imperfections (touchez les boutons sur la photo)', [['', 'Désactivé'], ['heal', 'Activé']]);
+      if (S.rtTool === 'heal') fxRange(box, 'Taille du correcteur', () => S.rtSpot, v => { S.rtSpot = v; }, 5, 100, 1, '', 30);
+      btnRow([['Annuler le dernier point', () => { if (ph && ph.spots && ph.spots.length) { ph.spots.pop(); invalidate(); } }], ['Effacer les points', () => { if (ph) { ph.spots = []; invalidate(); } }]]);
+      break;
+    case 'eyes': sl(RT_SL.eyes); sw('Teinte des iris', 'irisC'); break;
+    case 'mouth': sl(RT_SL.mouth.slice(0, 1)); sw('Rouge à lèvres', 'lipC'); sl(RT_SL.mouth.slice(1)); break;
+    case 'nose': sl(RT_SL.nose); break;
+    case 'shape': sl(RT_SL.shape); box.insertAdjacentHTML('beforeend', '<p class="note">Valeurs négatives = plus fin / plus court, positives = plus large / plus long.</p>'); break;
+    case 'hsel': {
+      box.insertAdjacentHTML('beforeend', '<p class="note" style="margin:6px 0">La sélection des cheveux est automatique (silhouette + couleur). Affinez-la si besoin avec le pinceau.</p>');
+      fxToggle(box, 'Afficher la sélection en rouge', () => S.rtShowHair, v => { S.rtShowHair = v; });
+      const hs = (k, l) => { const d = fxRange(box, l, () => S.rt[k], v => { S.rt[k] = v; }, 0, 100, 1, '', 50); d.querySelector('input').onchange = () => { commit(); invalidate(); }; };
+      hs('hairTol', 'Sensibilité à la couleur'); hs('hairExt', 'Étendue (courts ↔ longs)');
+      tool('Pinceau', [['', 'Désactivé'], ['add', 'Ajouter'], ['erase', 'Effacer']]);
+      if (S.rtTool === 'add' || S.rtTool === 'erase') fxRange(box, 'Taille du pinceau', () => S.rtBrush, v => { S.rtBrush = v; }, 5, 100, 1, '', 35);
+      btnRow([['Annuler le dernier trait', () => { if (ph && ph.hairEdits && ph.hairEdits.length) { ph.hairEdits.pop(); ph.hairEditsV = (ph.hairEditsV || 0) + 1; invalidate(); } }], ['Repartir de l’automatique', () => { if (ph) { ph.hairEdits = []; ph.hairEditsV = (ph.hairEditsV || 0) + 1; invalidate(); } }]]);
+      break;
+    }
+    case 'hcolor': sw('Couleur', 'hairC'); sl(RT_SL.hcolor); box.insertAdjacentHTML('beforeend', '<p class="note">Sur des cheveux foncés, montez « Éclaircir » pour que la couleur ressorte.</p>'); break;
+    case 'hombre':
+      fxToggle(box, 'Dégradé racines → pointes (ombré)', () => S.rt.ombre, v => { S.rt.ombre = v; if (v && !S.rt.hairA) S.rt.hairA = 70; if (v && !S.rt.hairL) S.rt.hairL = 30; renderRt(); });
+      if (S.rt.ombre) { sw('Racines', 'hairC'); sw('Pointes', 'ombreC'); sl([['ombreP', 'Position du dégradé', 0, 100, 55], ['ombreS', 'Douceur de la transition', 0, 100, 30], ['hairA', 'Intensité', 0, 100], ['hairL', 'Éclaircir', 0, 100]]); }
+      break;
+    case 'hsmooth': sl(RT_SL.hsmooth); break;
+    case 'wigs': {
+      const tiles = document.createElement('div'); tiles.className = 'hscroll'; box.appendChild(tiles);
+      [['', 'Aucune']].concat(WIGS).forEach(([id, n]) => {
+        const b = document.createElement('button'); b.className = 'tile' + ((S.rt.wig || '') === id ? ' on' : '');
+        const th = document.createElement('div'); th.className = 'th'; th.appendChild(wigThumb(ph, id)); b.appendChild(th);
+        b.insertAdjacentHTML('beforeend', `<span>${n}</span>`);
+        b.onclick = () => { S.rt.wig = id; commit(); invalidate(); renderRt(); }; tiles.appendChild(b);
+      });
+      if (S.rt.wig) { sw('Couleur', 'wigC'); sl([['wigHi', 'Mèches claires', 0, 100, 30], ['wigSize', 'Taille', 70, 140, 100], ['wigY', 'Hauteur'], ['wigX', 'Décalage horizontal']]); }
+      box.insertAdjacentHTML('beforeend', '<p class="note">Perruques dessinées et placées automatiquement sur la tête (style illustration). Un rendu photoréaliste façon FaceApp demande une IA générative en ligne, impossible hors connexion.</p>');
+      break;
+    }
+  }
+  if (/^(skin|eyes|mouth|nose|shape)$/.test(S.rtSub) && RT_SL[S.rtSub]) fxResetBtn(box, 'Réinitialiser', () => RT_SL[S.rtSub].forEach(([k]) => { S.rt[k] = RT0[k]; }));
+  if (/^(hcolor|hsmooth)$/.test(S.rtSub)) fxResetBtn(box, 'Réinitialiser', () => RT_SL[S.rtSub].forEach(([k]) => { S.rt[k] = RT0[k]; }));
+}
+function wigThumb(ph, id) {
+  const src = ph ? ph.thumb : demoSrc(), c = mkCanvas(src.width, src.height), g = c.getContext('2d'); g.drawImage(src, 0, 0);
+  if (ph && ph.face && ph.face.faces.length) { // vignette recadrée sur la tête
+    const f = ph.face.faces[0]; if (id) drawWig(g, f, { ...S.rt, wig: id }, c.width, c.height);
+    const F = faceFrame(f, c.width, c.height), side = Math.min(Math.max(c.width, c.height), F.W * (id === 'long' ? 3.4 : 2.7)), cx = F.c[0], cy = F.c[1] - F.H * (id === 'long' ? 0.05 : 0.25);
+    const t = mkCanvas(140, 140); t.getContext('2d').drawImage(c, cx - side / 2, cy - side / 2, side, side, 0, 0, 140, 140); freeCanvas(c); return t;
+  }
+  else if (id) { g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = '#fff'; g.font = `600 ${c.width * 0.12}px ${FONTS.sans}`; g.textAlign = 'center'; g.fillText(WIGS.find(w => w[0] === id)[1], c.width / 2, c.height / 2); }
+  return c;
+}
+
+// ----- outils sur l'aperçu : correcteur et pinceau -----
+let rtStroke = null;
+function rtToPhoto(e) {
+  if (!VL) return null; const u = toUnits(e), p = VL.photo;
+  return [(u.x - p.x) / p.w, (u.y - p.y) / p.h];
+}
+function rtPointerDown(e) {
+  if (S.tab !== 'rt' || !S.rtTool || !curPhoto()) return false;
+  const q = rtToPhoto(e); if (!q || q[0] < 0 || q[1] < 0 || q[0] > 1 || q[1] > 1) return true;
+  const ph = curPhoto(), md = Math.max(ph.w, ph.h), sc = Math.min(ph.w, ph.h) / md;
+  if (S.rtTool === 'heal') { (ph.spots = ph.spots || []).push({ x: q[0], y: q[1], r: (0.003 + S.rtSpot / 100 * 0.022) * sc }); invalidate(); return true; }
+  rtStroke = { m: S.rtTool, r: (0.006 + S.rtBrush / 100 * 0.05) * sc, pts: [q] }; invalidate(); return true;
+}
+function rtPointerMove(e) {
+  if (!rtStroke) return false; const q = rtToPhoto(e); if (!q) return true;
+  const l = rtStroke.pts[rtStroke.pts.length - 1]; if (Math.hypot(q[0] - l[0], q[1] - l[1]) > rtStroke.r * 0.3) { rtStroke.pts.push(q); invalidate(); }
+  return true;
+}
+function rtPointerUp() {
+  if (!rtStroke) return false; const ph = curPhoto();
+  if (ph) { (ph.hairEdits = ph.hairEdits || []).push(rtStroke); ph.hairEditsV = (ph.hairEditsV || 0) + 1; }
+  rtStroke = null; invalidate(); return true;
+}
+// Dessin de la sélection des cheveux et du trait en cours sur l'aperçu
+function rtOverlay(g, L, s) {
+  const ph = curPhoto(); if (!ph || S.tab !== 'rt') return;
+  const p = L.photo;
+  if (S.rtShowHair && ph.rtm) { const ov = ph.hairOv || (ph.hairOv = hairOverlay(ph.rtm)), R = ph.rtm.rect; g.drawImage(ov, (p.x + R[0] * p.w) * s, (p.y + R[1] * p.h) * s, R[2] * p.w * s, R[3] * p.h * s); }
+  if (rtStroke) {
+    const md = Math.max(p.w, p.h); g.save(); g.strokeStyle = rtStroke.m === 'add' ? 'rgba(255,60,110,.55)' : 'rgba(80,200,255,.55)'; g.lineWidth = rtStroke.r * md * 2 * s / (Math.min(p.w, p.h) / md) * (Math.min(p.w, p.h) / md); g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); rtStroke.pts.forEach((q, i) => { const x = (p.x + q[0] * p.w) * s, y = (p.y + q[1] * p.h) * s; i ? g.lineTo(x, y) : g.moveTo(x, y); }); if (rtStroke.pts.length === 1) g.lineTo((p.x + rtStroke.pts[0][0] * p.w) * s + 0.1, (p.y + rtStroke.pts[0][1] * p.h) * s); g.stroke(); g.restore();
+  }
+  if (S.rtTool === 'heal' && ph.spots && ph.spots.length) { g.save(); g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 1.5; const md = Math.max(p.w, p.h); ph.spots.forEach(q => { g.beginPath(); g.arc((p.x + q.x * p.w) * s, (p.y + q.y * p.h) * s, q.r * md * s, 0, 7); g.stroke(); }); g.restore(); }
+}
+
 // ===================== panels.js (interface des onglets) =====================
 const ICON = {
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -2015,12 +2769,12 @@ function setTab(t) {
   $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $$('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + t));
   $('.panel').classList.toggle('compact', t === 'frames');
-  if (t === 'fx') renderFx(); if (t === 'frames') renderPresets(); if (t === 'adjust') renderAdjust(); if (t === 'sign') renderSign(); if (t === 'export') renderExport();
+  if (t === 'rt') renderRt(); if (t === 'fx') renderFx(); if (t === 'frames') renderPresets(); if (t === 'adjust') renderAdjust(); if (t === 'sign') renderSign(); if (t === 'export') renderExport();
   invalidate();
 }
 $$('#nav button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 function refreshAll() {
-  markPreset(); if (S.tab === 'fx') renderFx(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'sign') renderSign(); if (S.tab === 'export') renderExport(); invalidate();
+  markPreset(); if (S.tab === 'rt') renderRt(); if (S.tab === 'fx') renderFx(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'sign') renderSign(); if (S.tab === 'export') renderExport(); invalidate();
 }
 
 // ---------- couleurs ----------
@@ -2094,7 +2848,7 @@ function applyPreset(p) {
 async function loadStyles() { S.styles = (await DB.all('styles')).sort((a, b) => a.created - b.created); }
 async function saveStyle() {
   const name = (prompt('Nom du style :', `Mon style ${S.styles.length + 1}`) || '').trim(); if (!name) return;
-  const st = { id: uid(), name: name.slice(0, 30), frame: JSON.parse(JSON.stringify(S.frame)), layers: JSON.parse(JSON.stringify(S.layers)), adj: cloneAdj(S.adj), created: Date.now() };
+  const st = { id: uid(), name: name.slice(0, 30), frame: JSON.parse(JSON.stringify(S.frame)), layers: JSON.parse(JSON.stringify(S.layers)), adj: cloneAdj(S.adj), rt: { ...S.rt }, created: Date.now() };
   S.styles.push(st);
   try { await DB.put('styles', st); } catch (e) { toast('Style non mémorisé (stockage indisponible)'); }
   S.presetId = 'st:' + st.id; renderPresets(); persist(); toast('Style enregistré');
@@ -2102,6 +2856,7 @@ async function saveStyle() {
 function applyStyle(st) {
   S.frame = { ...DEF, ...JSON.parse(JSON.stringify(st.frame)) };
   if (st.adj) S.adj = normAdj(st.adj);
+  if (st.rt) S.rt = normRt(st.rt);
   S.layers = JSON.parse(JSON.stringify(st.layers || [])).filter(l => l.type !== 'img' || SIGS.has(l.sig));
   S.sel = null; S.presetId = 'st:' + st.id; commit(); refreshAll();
 }
@@ -2384,6 +3139,7 @@ function renderExport() {
     if (saved.presetId !== undefined) S.presetId = saved.presetId;
     if (saved.group) S.group = saved.group;
     if (saved.adj) S.adj = normAdj(saved.adj);
+    if (saved.rt) S.rt = normRt(saved.rt);
     if (saved.fxGroup) S.fxGroup = saved.fxGroup;
   }
   await Promise.all([loadSigs(), loadStyles()]);

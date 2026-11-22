@@ -3,6 +3,8 @@
 Petite application web (100 % locale, hors ligne, installable) pour ajouter des cadres personnalisables et votre signature à vos photos, puis les exporter en JPEG ou PNG. Aucune image n'est envoyée sur Internet : tout est calculé dans le navigateur.
 
 ## Ce qu'elle fait
+- **Retouche du visage** (détection automatique, 478 points, plusieurs visages) : lissage de la peau, teint, éclat, anti-brillance, correcteur d'imperfections au doigt ; yeux (taille, écartement, blanc de l'œil, éclat et couleur des iris, cernes) ; bouche (dents blanches, rouge à lèvres, brillance, volume, sourire) ; nez (largeur, taille, pointe) ; forme du visage (largeur, mâchoire, menton, joues, front) ; 4 retouches en un geste.
+- **Cheveux** : sélection automatique (affinable au pinceau), couleur avec éclaircissement, dégradé racines → pointes, lissage anti-frisottis, brillance ; 7 perruques dessinées et placées automatiquement (style illustration).
 - **Filtres façon Lightroom** : 51 filtres en 9 familles (Portrait, Cinéma, Paysage, Street, Urbain, Campagne, Vintage, Noir & blanc, Mariage), avec un curseur d'intensité, plus vos propres filtres enregistrés.
 - **Réglages photo** : Lumière (exposition, contraste, hautes lumières, ombres, blancs, noirs) ; Couleur (température, teinte, vibrance, saturation, noir et blanc) ; **TSL / couleur sélective** (teinte, saturation et luminance pour 8 couleurs, ou mélange N&B) ; **Balance des couleurs** (ombres, tons moyens, hautes lumières + balance) ; Effets (clarté, correction du voile, netteté, halo, fondu, vignettage, grain). Calcul sur la carte graphique (WebGL) : aperçu en direct, export en pleine définition.
 - **36 préréglages** : Simple (bordures, ombre portée, polaroid, carré / Insta 4:5), Galerie (cadre noir, noyer, chêne, blanc, doré, alu, murs colorés, tirage suspendu à pinces), Infos (bandeau façon appareil photo avec les données EXIF), Flou (fond flouté, story 9:16), Pellicule (35 mm).
@@ -14,7 +16,7 @@ Petite application web (100 % locale, hors ligne, installable) pour ajouter des 
 
 ## Mettre en ligne sur GitHub Pages
 1. Sur github.com, créez un dépôt **public**, par exemple `encadreur`.
-2. Décompressez le zip, puis dans le dépôt : **Add file → Upload files** → **choose your files** et sélectionnez **les 8 fichiers d'un coup** (aucun dossier) : `index.html`, `manifest.webmanifest`, `sw.js`, `icon-180.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `README.md`. Validez avec **Commit changes**.
+2. Décompressez le zip, puis dans le dépôt : **Add file → Upload files** → **choose your files** et sélectionnez **tous les fichiers du dossier d'un coup** (19 fichiers, aucun sous-dossier). Validez avec **Commit changes**.
    - Sur iPhone : touchez le zip dans l'app Fichiers pour le décompresser ; dans le sélecteur de GitHub, touchez **Sélectionner** pour cocher plusieurs fichiers.
    - N'envoyez pas le zip lui-même : GitHub ne le décompresse pas.
 3. **Settings → Pages** → *Source* : **Deploy from a branch**, branche `main`, dossier `/ (root)` → **Save**.
@@ -29,11 +31,12 @@ Pour enregistrer une image exportée dans Photos : **Enregistrer / Partager** �
 - `index.html` fonctionne aussi tout seul, ouvert directement depuis l'ordinateur (sans le mode hors ligne).
 
 ## Mettre à jour
-Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.1.0'` → `v1.1.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.2.0'` → `v1.2.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
 Sur l'iPhone, fermez complètement l'app (balayez sa carte vers le haut), puis rouvrez-la avec une connexion : la nouvelle version se charge.
 Pour renommer l'app : modifiez `name` / `short_name` dans `manifest.webmanifest` et la balise `<title>` de `index.html`.
 
 ## Bon à savoir
+- La retouche du visage et des cheveux utilise la détection hors ligne de Google (MediaPipe, licence Apache 2.0) : au premier usage, l'app télécharge environ 16 Mo depuis votre site GitHub, puis tout fonctionne sans connexion. Elle ne marche pas en ouvrant `index.html` directement depuis l'ordinateur : passez par l'adresse GitHub Pages.
 - Si un fichier manque (par exemple une icône), l'app fonctionne quand même ; seule l'icône d'écran d'accueil serait remplacée par une capture de la page.
 - Signatures et styles sont gardés dans le navigateur de chaque appareil. Sur iPhone, l'app installée a son propre stockage, séparé de Safari.
 - Safari sur iPhone limite une image à environ 16,7 mégapixels : un export « Originale » plus grand est réduit automatiquement.
