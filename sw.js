@@ -1,5 +1,5 @@
 // Encadreur — service worker (hors ligne). Changez CACHE à chaque mise à jour du site.
-const CACHE = 'encadreur-v1.0.2';
+const CACHE = 'encadreur-v1.1.0';
 const CORE = ['./', './index.html'];
 const EXTRA = ['./manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 self.addEventListener('install', e => {

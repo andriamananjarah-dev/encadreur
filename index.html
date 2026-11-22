@@ -80,7 +80,7 @@ body.comparing .cmp-badge{display:block}
 .body{min-width:0;height:clamp(196px,31dvh,330px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 16px;overscroll-behavior:contain}
 .pane{display:none}.pane.on{display:block}
 .panel.compact .body{height:auto} /* onglet Cadres : le panneau épouse son contenu, la photo gagne la place */
-.nav{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding-bottom:var(--sab);background:#000}
+.nav{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line);padding-bottom:var(--sab);background:#000}
 .nav button{padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:550;color:var(--mut)}
 .nav button svg{width:22px;height:22px}
 .nav button.on{color:var(--acc)}
@@ -185,6 +185,21 @@ select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(
    2) Bogue WebKit : la zone d'affichage est raccourcie (bande vide en bas) tant que la page n'est pas
       aussi haute que l'écran. On donne à la page la hauteur de l'écran ; si la bande persiste, le script
       la mesure (--vgap) : la barre d'onglets n'ajoute plus sa marge et la bande garde la même couleur. */
+/* filtres */
+.subtabs.scroll{overflow-x:auto;scrollbar-width:none}
+.subtabs.scroll::-webkit-scrollbar{display:none}
+.subtabs.scroll button{flex:1 0 auto;padding:0 6px;white-space:nowrap;font-size:12.5px}
+input[type=range].bip::-webkit-slider-runnable-track{background:linear-gradient(#8a8890,#8a8890) 50% 50%/2px 12px no-repeat,#3a3a40}
+input[type=range].bip::-moz-range-progress{background:transparent}
+input[type=range].trk::-webkit-slider-runnable-track{background:var(--trk);height:6px}
+input[type=range].trk::-webkit-slider-thumb{margin-top:-9px}
+input[type=range].trk::-moz-range-track{background:var(--trk);height:6px}
+input[type=range].trk::-moz-range-progress{background:transparent}
+.dots{display:flex;justify-content:space-between;gap:6px;margin:6px 0 2px}
+.dot{width:32px;height:32px;border-radius:50%;background:var(--c);position:relative;box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+.dot.on{outline:2.5px solid #fff;outline-offset:2.5px}
+.dot.mod::after{content:"";position:absolute;right:-2px;top:-2px;width:9px;height:9px;border-radius:50%;background:var(--acc);border:2px solid var(--panel)}
+.dotlbl{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:7px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
 @media (display-mode:standalone){
   html{min-height:min(100lvh,calc(100% + env(safe-area-inset-top,0px)))}
   html,body{background:#000}
@@ -204,7 +219,9 @@ html.vgap{min-height:calc(100% + var(--vgap))}
   .body{height:auto;flex:1;padding:16px 18px 24px}
   .chips,.hscroll,.lib{margin:0 -18px;padding-left:18px;padding-right:18px}
   .chips{margin-bottom:14px;flex-wrap:wrap;overflow:visible}
-  #pane-frames .hscroll{flex-wrap:wrap;overflow:visible;gap:14px 10px}
+  #pane-frames .hscroll,#pane-fx .hscroll{flex-wrap:wrap;overflow:visible;gap:14px 10px}
+  .nav button{flex-direction:column;gap:3px;font-size:12px;padding:10px 0 9px}
+  .nav button svg{width:20px;height:20px}
   .modal{align-items:center}
 }
 
@@ -230,7 +247,7 @@ html.vgap{min-height:calc(100% + var(--vgap))}
     <div class="empty" id="empty">
       <svg class="art" viewBox="0 0 120 120" aria-hidden="true"><rect x="14" y="10" width="92" height="100" rx="3" fill="#1d1d20" stroke="#3b3b40" stroke-width="2"/><rect x="24" y="20" width="72" height="80" fill="#f4f1ea"/><rect x="34" y="30" width="52" height="60" fill="#2a2a2e"/><circle cx="72" cy="46" r="6" fill="#f2a93b"/><path d="m34 90 18-24 12 14 7-8 15 18z" fill="#f2a93b" opacity=".85"/></svg>
       <h1>Encadrez vos photos</h1>
-      <p>Cadres, passe-partout, bandeau d'infos, flou, pellicule… et votre signature par-dessus, avec les modes de fusion.</p>
+      <p>Filtres et réglages façon Lightroom, cadres, passe-partout, bandeau d'infos… et votre signature par-dessus, avec les modes de fusion.</p>
       <button class="btn pri" id="btnOpen2" style="height:46px;padding:0 22px;font-size:15px">Choisir des photos</button>
       <p class="hint-desk" style="font-size:12.5px">ou glisser-déposer · coller (Ctrl+V)</p>
       <div class="priv"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Tout reste sur votre appareil, rien n'est envoyé.</div>
@@ -243,6 +260,10 @@ html.vgap{min-height:calc(100% + var(--vgap))}
       <div class="pane" id="pane-frames">
         <div class="chips" id="groups"></div>
         <div class="hscroll" id="presets"></div>
+      </div>
+      <div class="pane" id="pane-fx">
+        <div class="subtabs scroll" id="fxSubtabs"></div>
+        <div id="fxBody"></div>
       </div>
       <div class="pane" id="pane-adjust">
         <div class="subtabs" id="subtabs"></div>
@@ -262,6 +283,7 @@ html.vgap{min-height:calc(100% + var(--vgap))}
       <div class="pane" id="pane-export"><div id="expCtrls"></div></div>
     </div>
     <nav class="nav" id="nav">
+      <button data-tab="fx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8.6" r="5"/><circle cx="8.6" cy="14.6" r="5"/><circle cx="15.4" cy="14.6" r="5"/></svg>Filtres</button>
       <button data-tab="frames"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1.5"/><rect x="7.5" y="7.5" width="9" height="9"/></svg>Cadres</button>
       <button data-tab="adjust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>Réglages</button>
       <button data-tab="sign"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c2.5-.5 3.5-8 6.5-8 2 0-1 8.5 1.2 8.5 1.6 0 2.4-4.2 4-4.2 1.1 0 .9 3.2 2.1 3.2.9 0 1.9-1 3.2-2.1"/><path d="M3 20.5h18"/></svg>Signature</button>
@@ -1078,12 +1100,306 @@ function reanchor(ly, L, s, toks, anchor) {
   if (b && !ly.pos) { ly.x = (b.cx - A2.x) / A2.w; ly.y = (b.cy - A2.y) / A2.h; }
 }
 
+// ===================== filters.js (retouche photo GPU, façon Lightroom) =====================
+const BANDS = [['r', 'Rouge', '#e5484d'], ['o', 'Orange', '#f08a24'], ['y', 'Jaune', '#e8c22c'], ['g', 'Vert', '#46a758'],
+  ['a', 'Aqua', '#2fb5c4'], ['b', 'Bleu', '#3e63dd'], ['p', 'Violet', '#8e4ec6'], ['m', 'Magenta', '#d6409f']];
+const ADJ0 = {
+  exp: 0, con: 0, hi: 0, sh: 0, wh: 0, bl: 0, temp: 0, tint: 0, vib: 0, sat: 0,
+  clar: 0, dehaze: 0, sharp: 0, glow: 0, fade: 0, vig: 0, vigSize: 50, vigFeather: 50, grain: 0, grainSize: 25,
+  bw: false, amount: 100, hsl: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+  grade: { sh: [210, 0, 0], mid: [40, 0, 0], hi: [45, 0, 0], bal: 0 }, fxId: '',
+};
+const ADJ_NUM = ['exp', 'con', 'hi', 'sh', 'wh', 'bl', 'temp', 'tint', 'vib', 'sat', 'clar', 'dehaze', 'sharp', 'glow', 'fade', 'vig', 'grain'];
+const cloneAdj = a => JSON.parse(JSON.stringify(a || ADJ0));
+function normAdj(a) { // complète un objet partiel / ancien
+  const o = { ...cloneAdj(ADJ0), ...(a || {}) };
+  o.hsl = Array.from({ length: 8 }, (_, i) => (a && a.hsl && a.hsl[i] ? a.hsl[i].slice(0, 3) : [0, 0, 0]));
+  o.grade = { ...cloneAdj(ADJ0.grade), ...((a && a.grade) || {}) };
+  return o;
+}
+function isNeutral(A) {
+  if (!A || +A.amount === 0) return true;
+  if (A.bw || ADJ_NUM.some(k => +A[k])) return false;
+  if (A.hsl.some(b => b[0] || b[1] || b[2])) return false;
+  const g = A.grade; return !['sh', 'mid', 'hi'].some(z => g[z][1] || g[z][2]);
+}
+const adjKey = A => isNeutral(A) ? '' : JSON.stringify(A);
+
+const FX_VS = `attribute vec2 aPos; varying vec2 vUv;
+void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+const FX_FS = `precision highp float;
+varying vec2 vUv;
+uniform sampler2D uImg, uBlur;
+uniform vec2 uPx, uAR;
+uniform float uExp, uCon, uHi, uSh, uWh, uBl, uTemp, uTint, uVib, uSat, uClar, uDehaze, uSharp, uGlow, uFade;
+uniform float uVig, uVigSize, uVigFeather, uGrain, uGrainSize, uBW, uAmount, uBal;
+uniform float uCen[9];
+uniform vec3 uHSL[9];
+uniform vec3 uGrade[3];
+float luma(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+vec3 rgb2hsl(vec3 c){
+  float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), l = (mx + mn) * 0.5, d = mx - mn, h = 0.0, s = 0.0;
+  if (d > 0.00001) {
+    s = l > 0.5 ? d / (2.0 - mx - mn) : d / (mx + mn);
+    if (mx == c.r) h = (c.g - c.b) / d + (c.g < c.b ? 6.0 : 0.0);
+    else if (mx == c.g) h = (c.b - c.r) / d + 2.0;
+    else h = (c.r - c.g) / d + 4.0;
+    h /= 6.0;
+  }
+  return vec3(h, s, l);
+}
+float h2c(float p, float q, float t){ t = fract(t);
+  if (t < 1.0/6.0) return p + (q - p) * 6.0 * t; if (t < 0.5) return q; if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0; return p; }
+vec3 hsl2rgb(vec3 h){ if (h.y < 0.00001) return vec3(h.z);
+  float q = h.z < 0.5 ? h.z * (1.0 + h.y) : h.z + h.y - h.z * h.y, p = 2.0 * h.z - q;
+  return vec3(h2c(p, q, h.x + 1.0/3.0), h2c(p, q, h.x), h2c(p, q, h.x - 1.0/3.0)); }
+vec3 band(float hd){ vec3 a = vec3(0.0);
+  for (int i = 0; i < 8; i++) { float c0 = uCen[i], c1 = uCen[i + 1]; if (hd >= c0 && hd < c1) a = mix(uHSL[i], uHSL[i + 1], (hd - c0) / (c1 - c0)); }
+  return a; }
+vec3 gradeOff(vec3 g){ vec3 col = hsl2rgb(vec3(g.x, 1.0, 0.5)); return (col - luma(col)) * g.y * 0.32 + g.z * 0.22; }
+float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+void main(){
+  vec4 src = texture2D(uImg, vUv);
+  vec3 o = src.rgb, c = o, bl = texture2D(uBlur, vUv).rgb;
+  float Lo = luma(o), detail = Lo - luma(bl);
+  float nb = luma(texture2D(uImg, vUv + vec2(uPx.x, 0.0)).rgb + texture2D(uImg, vUv - vec2(uPx.x, 0.0)).rgb
+    + texture2D(uImg, vUv + vec2(0.0, uPx.y)).rgb + texture2D(uImg, vUv - vec2(0.0, uPx.y)).rgb) * 0.25;
+  float fine = Lo - nb;
+  // balance des blancs + exposition (espace linéaire), épaule douce sur les hautes lumières
+  vec3 lin = pow(max(c, 0.0), vec3(2.2));
+  vec3 wb = vec3(1.0 + uTemp * 0.32, 1.0 - uTint * 0.2, 1.0 - uTemp * 0.32);
+  lin *= wb / luma(wb) * exp2(uExp);
+  c = pow(lin, vec3(1.0 / 2.2));
+  vec3 t = max(c - 0.8, 0.0); c = min(c, 0.8) + 0.2 * (1.0 - exp(-t / 0.2));
+  // correction du voile
+  if (uDehaze > 0.0) { float d = uDehaze * 0.12; c = (c - d) / (1.0 - d); c = mix(vec3(luma(c)), c, 1.0 + uDehaze * 0.25); }
+  else c = mix(c, vec3(0.86), -uDehaze * 0.35);
+  // blancs / noirs
+  float bp = -uBl * 0.08, wp = 1.0 - uWh * 0.12;
+  c = clamp((c - bp) / (wp - bp), 0.0, 1.0);
+  // hautes lumières / ombres
+  float L = luma(c), wH = smoothstep(0.45, 1.0, L), wS = 1.0 - smoothstep(0.0, 0.55, L);
+  float dL = uHi * wH * (uHi < 0.0 ? L : 1.0 - L) * 0.6 + uSh * wS * (uSh > 0.0 ? 1.0 - L : L) * 0.6;
+  float r = min((L + dL) / max(L, 0.002), 3.0);
+  c = clamp(dL >= 0.0 ? mix(c + dL, c * r, 0.15) : mix(c + dL, c * r, 0.6), 0.0, 1.0); // éclaircir sans gonfler la couleur des noirs
+  // contraste (courbe en S)
+  vec3 sc = c * c * c * (c * (c * 6.0 - 15.0) + 10.0);
+  c = uCon >= 0.0 ? mix(c, sc, uCon) : mix(c, 0.5 + (c - 0.5) * 0.55, -uCon);
+  // clarté (contraste local, tons moyens) + netteté
+  L = luma(c);
+  c += detail * uClar * 1.6 * (1.0 - pow(abs(2.0 * L - 1.0), 2.0)) + fine * uSharp * 2.5;
+  c = clamp(c, 0.0, 1.0);
+  // TSL / mélange noir et blanc
+  vec3 hsl = rgb2hsl(c), a = band(hsl.x * 360.0);
+  float sw = smoothstep(0.02, 0.25, hsl.y), hd = hsl.x * 360.0;
+  if (uBW > 0.5) {
+    c = vec3(clamp(luma(c) + a.z * 0.4 * hsl.y, 0.0, 1.0));
+  } else {
+    hsl.x = fract(hsl.x + a.x * (30.0 / 360.0) * sw);
+    hsl.y = clamp(hsl.y * (1.0 + a.y * sw), 0.0, 1.0);
+    hsl.z = clamp(hsl.z + a.z * 0.22 * sw * (1.0 - abs(2.0 * hsl.z - 1.0) * 0.6), 0.0, 1.0);
+    c = hsl2rgb(hsl);
+    L = luma(c);
+    float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b)), skin = 1.0 - smoothstep(0.0, 25.0, abs(hd - 30.0));
+    float v = uVib * (uVib > 0.0 ? (1.0 - (mx - mn)) * (1.0 - 0.6 * skin) * smoothstep(0.03, 0.35, L) : 1.0);
+    c = mix(vec3(L), c, 1.0 + v);
+    c = mix(vec3(luma(c)), c, 1.0 + uSat);
+  }
+  // étalonnage (ombres / tons moyens / hautes lumières)
+  L = clamp(luma(c) + uBal * 0.3, 0.0, 1.0);
+  float gS = (1.0 - L) * (1.0 - L), gHi = L * L, gM = max(0.0, 1.0 - gS - gHi);
+  c = clamp(c + gradeOff(uGrade[0]) * gS + gradeOff(uGrade[1]) * gM + gradeOff(uGrade[2]) * gHi, 0.0, 1.0);
+  // fondu (noirs mats)
+  c = c * (1.0 - uFade * 0.17) + uFade * 0.11;
+  // halo lumineux
+  float hm = smoothstep(0.45, 0.95, luma(bl));
+  c = 1.0 - (1.0 - c) * (1.0 - bl * hm * uGlow * 0.7);
+  // vignettage
+  vec2 q = (vUv - 0.5) * 2.0 * uAR;
+  float d = length(q) / length(uAR), st = 0.15 + uVigSize * 0.7, vm = smoothstep(st, st + 0.15 + uVigFeather * 0.85, d);
+  if (uVig < 0.0) c *= 1.0 + uVig * vm * 0.9; else c = mix(c, vec3(1.0), uVig * vm * 0.85);
+  // grain argentique (indépendant de la résolution)
+  if (uGrain > 0.0) {
+    vec2 gp = vUv * uAR * (1100.0 / (1.0 + uGrainSize * 3.0));
+    float n = vnoise(gp) * 0.65 + vnoise(gp * 2.13 + 17.0) * 0.35 - 0.5;
+    L = luma(c); c += n * uGrain * 0.28 * (1.0 - 0.6 * abs(2.0 * L - 1.0));
+  }
+  gl_FragColor = vec4(mix(o, clamp(c, 0.0, 1.0), uAmount), src.a);
+}`;
+
+const FX = (() => {
+  let cv = null, gl = null, loc = {}, tImg = null, tBlur = null, lastSrc = null, lastBlur = null, failed = false, maxTex = 4096, maxVp = [4096, 4096];
+  const UN = ['uImg', 'uBlur', 'uPx', 'uAR', 'uExp', 'uCon', 'uHi', 'uSh', 'uWh', 'uBl', 'uTemp', 'uTint', 'uVib', 'uSat', 'uClar', 'uDehaze', 'uSharp', 'uGlow', 'uFade',
+    'uVig', 'uVigSize', 'uVigFeather', 'uGrain', 'uGrainSize', 'uBW', 'uAmount', 'uBal', 'uCen', 'uHSL', 'uGrade'];
+  function init() {
+    if (gl && !gl.isContextLost()) return true;
+    if (failed) return false;
+    try {
+      cv = document.createElement('canvas');
+      const opt = { premultipliedAlpha: false, preserveDrawingBuffer: true, antialias: false, alpha: true, depth: false, stencil: false };
+      gl = cv.getContext('webgl', opt) || cv.getContext('experimental-webgl', opt);
+      if (!gl) { failed = true; return false; }
+      cv.addEventListener('webglcontextlost', e => { e.preventDefault(); gl = null; lastSrc = lastBlur = null; }, false);
+      const sh = (type, s) => { const o = gl.createShader(type); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+      const prog = gl.createProgram();
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, FX_VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FX_FS)); gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const ap = gl.getAttribLocation(prog, 'aPos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+      UN.forEach(n => { loc[n] = gl.getUniformLocation(prog, n); });
+      const mk = () => { const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+        [[gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE], [gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR]].forEach(([k, v]) => gl.texParameteri(gl.TEXTURE_2D, k, v));
+        return t; };
+      tImg = mk(); tBlur = mk();
+      gl.uniform1i(loc.uImg, 0); gl.uniform1i(loc.uBlur, 1);
+      gl.uniform1fv(loc.uCen, new Float32Array([0, 30, 60, 120, 180, 225, 270, 315, 360]));
+      maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 4096; maxVp = gl.getParameter(gl.MAX_VIEWPORT_DIMS) || [4096, 4096];
+      lastSrc = lastBlur = null;
+      return true;
+    } catch (e) { console.warn('Filtres indisponibles :', e); failed = true; gl = null; return false; }
+  }
+  function upload(unit, tex, src) {
+    gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+  }
+  function uniforms(A, w, h) {
+    const n = v => (+v || 0) / 100, f = (k, v) => gl.uniform1f(loc[k], v), m = Math.max(w, h);
+    gl.uniform2f(loc.uPx, 1 / w, 1 / h); gl.uniform2f(loc.uAR, w / m, h / m);
+    f('uExp', +A.exp || 0); f('uCon', n(A.con)); f('uHi', n(A.hi)); f('uSh', n(A.sh)); f('uWh', n(A.wh)); f('uBl', n(A.bl));
+    f('uTemp', n(A.temp)); f('uTint', n(A.tint)); f('uVib', n(A.vib)); f('uSat', n(A.sat)); f('uClar', n(A.clar)); f('uDehaze', n(A.dehaze));
+    f('uSharp', n(A.sharp)); f('uGlow', n(A.glow)); f('uFade', n(A.fade)); f('uVig', n(A.vig)); f('uVigSize', n(A.vigSize)); f('uVigFeather', n(A.vigFeather));
+    f('uGrain', n(A.grain)); f('uGrainSize', n(A.grainSize)); f('uBW', A.bw ? 1 : 0); f('uAmount', A.amount == null ? 1 : n(A.amount)); f('uBal', n(A.grade.bal));
+    const hs = new Float32Array(27);
+    for (let i = 0; i < 9; i++) { const b = A.hsl[i % 8]; hs[i * 3] = n(b[0]); hs[i * 3 + 1] = n(b[1]); hs[i * 3 + 2] = n(b[2]); }
+    gl.uniform3fv(loc.uHSL, hs);
+    const gr = new Float32Array(9);
+    ['sh', 'mid', 'hi'].forEach((z, i) => { const g = A.grade[z]; gr[i * 3] = ((+g[0] % 360) + 360) % 360 / 360; gr[i * 3 + 1] = n(g[1]); gr[i * 3 + 2] = n(g[2]); });
+    gl.uniform3fv(loc.uGrade, gr);
+  }
+  // Rend src filtré à la taille w×h ; out : canvas 2D réutilisable (optionnel). Retourne null si WebGL indisponible.
+  function render(src, blurSrc, w, h, A, out) {
+    if (!init()) return null;
+    w = Math.max(1, Math.round(w)); h = Math.max(1, Math.round(h));
+    const k = Math.min(1, maxVp[0] / w, maxVp[1] / h); if (k < 1) { w = Math.floor(w * k); h = Math.floor(h * k); }
+    const sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
+    if (sw > maxTex || sh > maxTex) { src = scaled(src, maxTex); lastSrc = null; }
+    try {
+      if (src !== lastSrc) { upload(0, tImg, src); lastSrc = src; }
+      if (blurSrc !== lastBlur) { upload(1, tBlur, blurSrc); lastBlur = blurSrc; }
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tImg);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, tBlur);
+      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+      gl.viewport(0, 0, w, h); uniforms(A, w, h); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      if (out === 'gl') return cv; // export : on dessine directement depuis la toile WebGL (économise la mémoire)
+      if (!out || out.width !== w || out.height !== h) out = mkCanvas(w, h);
+      const g = out.getContext('2d'); g.clearRect(0, 0, w, h); g.drawImage(cv, 0, 0);
+      return out;
+    } catch (e) { console.warn(e); return null; }
+  }
+  function release() { // libère la mémoire GPU après un export
+    if (!gl) return;
+    const one = mkCanvas(1, 1);
+    try { upload(0, tImg, one); } catch (e) { }
+    lastSrc = null; if (cv) { cv.width = 1; cv.height = 1; }
+  }
+  return { render, release, ok: () => init() };
+})();
+
+// Version floue basse définition (clarté, halo) : indépendante de la résolution → aperçu = export
+function blurOf(owner, src) {
+  if (owner.__blur) return owner.__blur;
+  const c = scaled(src, 180); blurCanvas(c, Math.max(2, Math.round(Math.max(c.width, c.height) / 45)));
+  return owner.__blur = c;
+}
+
+// ===================== fx-presets.js (filtres prêts à l'emploi) =====================
+// hsl : { r|o|y|g|a|b|p|m : [teinte, saturation, luminance] } ; grade : { sh|mid|hi : [teinte°, saturation, luminance], bal }
+const FX_GROUPS = [['portrait', 'Portrait'], ['cine', 'Cinéma'], ['paysage', 'Paysage'], ['street', 'Street'], ['urbain', 'Urbain'],
+  ['campagne', 'Campagne'], ['vintage', 'Vintage'], ['nb', 'Noir & blanc'], ['mariage', 'Mariage'], ['mine', 'Mes filtres']];
+const FXP = (id, g, n, a) => ({ id, g, n, a });
+const FX_PRESETS = [
+  FXP('po-naturel', 'portrait', 'Naturel', { exp: 0.1, con: -5, hi: -20, sh: 15, vib: 15, temp: 4, clar: -5, hsl: { o: [0, -5, 8], r: [0, -5, 0] } }),
+  FXP('po-peau', 'portrait', 'Peau douce', { exp: 0.15, con: -12, hi: -15, sh: 20, clar: -25, vib: 10, temp: 6, tint: 2, glow: 10, hsl: { o: [-2, -10, 12], r: [0, -10, 5] } }),
+  FXP('po-lumineux', 'portrait', 'Lumineux', { exp: 0.3, con: -10, hi: -30, sh: 30, wh: 10, bl: 10, vib: 12, sat: -5, temp: 3, fade: 8 }),
+  FXP('po-dore', 'portrait', 'Heure dorée', { exp: 0.1, con: 8, hi: -20, sh: 10, vib: 15, temp: 22, tint: 4, glow: 12, hsl: { o: [3, 5, 5], y: [-5, 10, 0] }, grade: { hi: [45, 25, 0], sh: [30, 10, 0] } }),
+  FXP('po-rose', 'portrait', 'Rosé', { con: -5, sh: 15, temp: 6, tint: 12, fade: 6, hsl: { o: [-3, -5, 10], r: [5, -5, 5] }, grade: { hi: [340, 15, 0], sh: [300, 8, 0] } }),
+  FXP('po-studio', 'portrait', 'Studio', { con: 25, hi: -10, sh: -5, wh: 15, bl: -15, clar: 10, vib: 5, sat: -10, vig: -20, hsl: { o: [0, -8, 6] } }),
+
+  FXP('ci-teal', 'cine', 'Teal & Orange', { con: 20, hi: -25, sh: 10, bl: -10, sat: -5, vib: 10, vig: -15, hsl: { o: [5, 10, 5], a: [-10, 20, -10], b: [-15, 10, -10], g: [40, -30, -10] }, grade: { sh: [190, 40, -5], hi: [35, 35, 0] } }),
+  FXP('ci-block', 'cine', 'Blockbuster', { con: 30, hi: -30, sh: -10, bl: -20, wh: 10, temp: -6, sat: -15, clar: 10, vig: -25, grain: 8, grade: { sh: [200, 35, -10], hi: [40, 25, 5] } }),
+  FXP('ci-mat', 'cine', 'Film mat', { con: -10, hi: -20, sh: 10, sat: -20, fade: 30, grain: 12, grade: { sh: [210, 15, 0], hi: [40, 15, 0] } }),
+  FXP('ci-neon', 'cine', 'Nuit néon', { con: 15, temp: -15, tint: 10, sat: 10, vib: 20, glow: 20, vig: -20, hsl: { b: [-10, 25, -10], p: [0, 25, 0], m: [0, 30, 0] }, grade: { sh: [250, 35, -5], hi: [320, 20, 0] } }),
+  FXP('ci-halation', 'cine', 'Halation', { con: 10, temp: 8, glow: 35, fade: 12, grain: 15, hsl: { r: [0, 10, 0] }, grade: { hi: [20, 20, 5] } }),
+  FXP('ci-desert', 'cine', 'Désert', { con: 20, temp: 25, tint: 5, sat: -10, dehaze: 10, hsl: { o: [5, 15, 0], y: [-10, 10, 0], b: [-20, -20, 0] }, grade: { sh: [30, 15, 0], hi: [45, 20, 0] } }),
+  FXP('ci-bleunuit', 'cine', 'Bleu nuit', { exp: -0.3, con: 15, temp: -25, sat: -20, vig: -30, grade: { sh: [215, 30, -10], hi: [200, 10, 0] } }),
+
+  FXP('pa-eclatant', 'paysage', 'Éclatant', { con: 15, hi: -30, sh: 25, vib: 35, sat: 10, clar: 25, dehaze: 15, hsl: { b: [0, 15, -10], g: [0, 15, 0] } }),
+  FXP('pa-ciel', 'paysage', 'Ciel profond', { hi: -40, vib: 15, clar: 15, dehaze: 20, hsl: { b: [-5, 25, -30], a: [0, 15, -15] }, grade: { hi: [210, 10, 0] } }),
+  FXP('pa-verdure', 'paysage', 'Verdure', { vib: 20, clar: 15, temp: 3, hsl: { g: [-10, 25, 5], y: [-15, 15, 5], a: [0, 10, 0] } }),
+  FXP('pa-sunset', 'paysage', 'Coucher de soleil', { con: 15, hi: -25, vib: 25, temp: 30, tint: 8, glow: 10, hsl: { o: [0, 25, 0], r: [5, 20, 0], y: [-10, 20, 0] }, grade: { hi: [30, 30, 5], sh: [280, 15, 0] } }),
+  FXP('pa-brume', 'paysage', 'Brume', { con: -15, hi: -10, sh: 20, sat: -15, temp: -5, dehaze: -25, fade: 15, glow: 15 }),
+  FXP('pa-montagne', 'paysage', 'Montagne', { con: 20, hi: -30, sh: 20, vib: 15, sat: -10, temp: -8, clar: 35, dehaze: 25, vig: -15, hsl: { b: [0, 10, -15] } }),
+
+  FXP('st-contraste', 'street', 'Contraste', { con: 40, hi: -20, sh: -5, bl: -15, sat: -30, clar: 30, vig: -20, grain: 15 }),
+  FXP('st-reportage', 'street', 'Reportage', { con: 15, vib: 10, sat: -15, temp: -4, clar: 20, fade: 8, grain: 10, vig: -15 }),
+  FXP('st-grit', 'street', 'Grit', { con: 35, bl: -10, sat: -25, clar: 50, dehaze: 15, sharp: 30, grain: 25, vig: -30 }),
+  FXP('st-pluie', 'street', 'Pluie', { con: 10, hi: -15, sh: 10, temp: -18, tint: 4, sat: -25, clar: 15, vig: -20, grade: { sh: [205, 25, 0] } }),
+  FXP('st-soleil', 'street', 'Soleil dur', { exp: 0.1, con: 30, hi: -15, sh: -15, temp: 10, vib: 15, sat: 5, clar: 15 }),
+
+  FXP('ur-froid', 'urbain', 'Urbain froid', { con: 20, temp: -15, sat: -25, clar: 25, hsl: { o: [0, -10, 0], b: [0, 10, -10] }, grade: { sh: [200, 25, -5], hi: [190, 8, 0] } }),
+  FXP('ur-beton', 'urbain', 'Béton', { con: 15, sat: -45, temp: -5, clar: 30, fade: 10, sharp: 20 }),
+  FXP('ur-neon', 'urbain', 'Néon', { con: 20, bl: -15, vib: 30, temp: -10, tint: 12, glow: 25, hsl: { m: [0, 35, 5], p: [0, 30, 0], b: [-10, 30, 0], a: [0, 20, 0] } }),
+  FXP('ur-cyber', 'urbain', 'Cyberpunk', { con: 25, temp: -20, tint: 25, sat: 15, glow: 20, hsl: { y: [-30, 20, 0] }, grade: { sh: [220, 45, -10], hi: [310, 35, 0] } }),
+  FXP('ur-metro', 'urbain', 'Métro', { exp: -0.15, con: 25, sat: -15, temp: 5, tint: -8, grain: 15, vig: -25, grade: { sh: [160, 20, 0], hi: [50, 15, 0] } }),
+
+  FXP('ca-prairie', 'campagne', 'Prairie', { con: 5, sh: 15, vib: 25, temp: 8, glow: 8, hsl: { g: [-12, 15, 10], y: [-10, 10, 10] } }),
+  FXP('ca-recolte', 'campagne', 'Récolte', { con: 10, temp: 20, tint: 5, fade: 6, hsl: { y: [-8, 25, 0], o: [0, 20, 0], g: [-25, -10, 0] }, grade: { hi: [42, 25, 0] } }),
+  FXP('ca-matin', 'campagne', 'Matin', { exp: 0.2, con: -10, hi: -20, sh: 25, temp: -5, fade: 10, glow: 12, grade: { hi: [45, 15, 0], sh: [210, 12, 0] } }),
+  FXP('ca-terroir', 'campagne', 'Terroir', { con: 10, temp: 10, sat: -15, clar: 10, vig: -15, hsl: { g: [-20, -25, -5], y: [-10, -10, 0], o: [0, 10, 0] }, grade: { sh: [25, 15, 0] } }),
+  FXP('ca-champs', 'campagne', 'Champs dorés', { vib: 20, temp: 25, glow: 15, hsl: { y: [-12, 30, 5], g: [-30, 10, 0] }, grade: { hi: [38, 30, 5] } }),
+
+  FXP('vi-70', 'vintage', 'Vintage 70', { con: -5, sat: -15, temp: 15, tint: 8, fade: 25, grain: 20, vig: -20, hsl: { g: [-20, -20, 0], b: [-10, -25, 0] }, grade: { sh: [330, 15, 0], hi: [45, 25, 0] } }),
+  FXP('vi-polaroid', 'vintage', 'Instantané', { exp: 0.1, con: -10, temp: 5, sat: -10, fade: 20, vig: -25, grain: 12, grade: { sh: [190, 20, 0], hi: [50, 20, 0] } }),
+  FXP('vi-pellicule', 'vintage', 'Pellicule chaude', { con: 10, temp: 12, fade: 10, grain: 18, hsl: { r: [0, 10, 0], o: [0, 10, 0], g: [-15, -15, 0] }, grade: { sh: [20, 10, 0] } }),
+  FXP('vi-old', 'vintage', 'Old', { con: -10, sat: -60, temp: 25, clar: -10, fade: 30, vig: -40, grain: 35, grade: { mid: [35, 35, 0] } }),
+  FXP('vi-sepia', 'vintage', 'Sépia', { bw: true, con: 5, fade: 15, grain: 15, vig: -25, grade: { sh: [30, 45, 0], mid: [35, 35, 0], hi: [40, 25, 0] } }),
+  FXP('vi-delave', 'vintage', 'Délavé', { con: -20, sh: 15, sat: -30, temp: 3, fade: 35 }),
+
+  FXP('nb-classique', 'nb', 'Classique', { bw: true, con: 15 }),
+  FXP('nb-contraste', 'nb', 'Contrasté', { bw: true, con: 45, wh: 15, bl: -20, clar: 25, vig: -15 }),
+  FXP('nb-doux', 'nb', 'Doux', { bw: true, con: -10, sh: 15, fade: 12, glow: 10 }),
+  FXP('nb-argentique', 'nb', 'Argentique', { bw: true, con: 25, fade: 8, grain: 35, grainSize: 40, vig: -20, hsl: { r: [0, 0, 10], o: [0, 0, 15], b: [0, 0, -20] } }),
+  FXP('nb-selenium', 'nb', 'Sélénium', { bw: true, con: 20, grade: { sh: [215, 25, 0], hi: [40, 8, 0] } }),
+  FXP('nb-noir', 'nb', 'Film noir', { bw: true, exp: -0.2, con: 55, hi: -20, bl: -30, clar: 20, vig: -45, grain: 20 }),
+
+  FXP('ma-lumineux', 'mariage', 'Lumineux', { exp: 0.35, con: -15, hi: -35, sh: 30, wh: 10, bl: 12, vib: 10, sat: -10, temp: 5, fade: 8, glow: 12, hsl: { o: [-3, -10, 15], g: [-15, -30, 10] } }),
+  FXP('ma-romantique', 'mariage', 'Romantique', { con: -10, temp: 8, tint: 8, glow: 25, fade: 10, hsl: { o: [0, -5, 10] }, grade: { hi: [345, 15, 5], sh: [20, 10, 0] } }),
+  FXP('ma-ivoire', 'mariage', 'Ivoire', { exp: 0.2, con: -15, sat: -20, temp: 10, fade: 15, glow: 10, grade: { hi: [50, 15, 5], sh: [30, 10, 0] } }),
+  FXP('ma-pastel', 'mariage', 'Pastel', { exp: 0.25, con: -25, hi: -20, sh: 25, sat: -30, vib: 10, fade: 20, grade: { hi: [330, 10, 0], sh: [190, 10, 0] } }),
+  FXP('ma-champagne', 'mariage', 'Champagne', { con: -5, temp: 15, tint: 5, glow: 30, fade: 8, hsl: { o: [0, -5, 12], y: [-5, -10, 10] }, grade: { hi: [42, 25, 5] } }),
+];
+// Convertit un filtre compact en réglages complets
+function fxAdj(p) {
+  const o = normAdj({}), a = p.a || {};
+  Object.keys(a).forEach(k => { if (k !== 'hsl' && k !== 'grade') o[k] = a[k]; });
+  if (a.hsl) BANDS.forEach(([k], i) => { if (a.hsl[k]) o.hsl[i] = a.hsl[k].slice(); });
+  if (a.grade) Object.keys(a.grade).forEach(z => { o.grade[z] = Array.isArray(a.grade[z]) ? a.grade[z].slice() : a.grade[z]; });
+  o.fxId = p.id; o.amount = 100;
+  return o;
+}
+
 // ===================== app.js (état, aperçu, interactions, export) =====================
-const APP_VERSION = '1.0.2';
+const APP_VERSION = '1.1.0';
 const KEEP_KEYS = ['t1', 't2', 't3', 't4', 'logo', 'logoTint', 'filmText'];
 const S = {
   photos: [], cur: -1, frame: { ...DEF, ...PRESETS.find(p => p.id === 'g-noir').p }, layers: [], sel: null,
   exp: { fmt: 'jpeg', q: 92, size: 'orig' }, presetId: 'g-noir', group: 'gallery', tab: 'frames', sub: null, styles: [],
+  adj: normAdj({}), fxSub: 'presets', fxGroup: 'portrait', hslBand: 0, gradeZone: 'sh',
 };
 const view = $('#view'), vg = view.getContext('2d'), base = mkCanvas(1, 1);
 let VL = null, VS = 1, comparing = false, raf = 0, baseKey = '';
@@ -1133,6 +1449,7 @@ function releaseFull(ph) {
   if (ph.prev) { freeCanvas(ph.prev); ph.prev = null; }
   if (ph.img) { ph.img.src = ''; ph.img = null; }
   if (ph.url) { URL.revokeObjectURL(ph.url); ph.url = null; }
+  if (ph.fxCv) { freeCanvas(ph.fxCv); ph.fxCv = null; ph.fxKey = ''; }
 }
 async function selectPhoto(i) {
   if (i === S.cur || !S.photos[i]) return;
@@ -1155,7 +1472,7 @@ function removePhoto(i) {
 }
 function photoChanged() {
   document.body.classList.toggle('has-photo', !!curPhoto());
-  renderPStrip(); renderPresets(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'export') renderExport();
+  renderPStrip(); renderPresets(); if (S.tab === 'fx') renderFx(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'export') renderExport();
   baseKey = ''; invalidate();
 }
 function renderPStrip() {
@@ -1185,11 +1502,11 @@ function renderView() {
   if (view.width !== cw || view.height !== ch) { view.width = cw; view.height = ch; }
   view.style.width = cw / dpr + 'px'; view.style.height = ch / dpr + 'px';
   view.style.transform = `translateY(${-stripH / 2}px)`;
-  const key = JSON.stringify(P) + ph.id + cw + 'x' + ch + '|' + sigVersion + '|' + S.photos.indexOf(ph);
+  const key = JSON.stringify(P) + adjKey(S.adj) + ph.id + cw + 'x' + ch + '|' + sigVersion + '|' + S.photos.indexOf(ph);
   if (key !== baseKey || base.width !== cw || base.height !== ch) {
     base.width = cw; base.height = ch;
     const bg = ctx2d(base); bg.setTransform(cw / L.W, 0, 0, ch / L.H, 0, 0);
-    drawFrame(bg, L, P, ph.prev, toks); baseKey = key;
+    drawFrame(bg, L, P, fxSrc(ph), toks); baseKey = key;
   }
   vg.setTransform(1, 0, 0, 1, 0, 0); vg.clearRect(0, 0, cw, ch);
   if (comparing) {
@@ -1313,20 +1630,20 @@ $('#btnCompare').addEventListener('contextmenu', e => e.preventDefault());
 
 // ---------- historique ----------
 const H = { stack: [], i: -1 };
-const snapshot = () => JSON.stringify({ frame: S.frame, layers: S.layers, presetId: S.presetId });
+const snapshot = () => JSON.stringify({ frame: S.frame, layers: S.layers, presetId: S.presetId, adj: S.adj });
 function commit() {
   const sn = snapshot(); if (H.stack[H.i] === sn) return;
   H.stack.length = H.i + 1; H.stack.push(sn); if (H.stack.length > 80) H.stack.shift(); H.i = H.stack.length - 1;
   persist(); updUndo();
 }
 function restoreSnap(sn) {
-  const o = JSON.parse(sn); S.frame = o.frame; S.layers = o.layers; S.presetId = o.presetId;
+  const o = JSON.parse(sn); S.frame = o.frame; S.layers = o.layers; S.presetId = o.presetId; S.adj = normAdj(o.adj);
   if (!selLayer()) S.sel = null; refreshAll(); persist();
 }
 function undo() { if (H.i > 0) { H.i--; restoreSnap(H.stack[H.i]); updUndo(); } }
 function redo() { if (H.i < H.stack.length - 1) { H.i++; restoreSnap(H.stack[H.i]); updUndo(); } }
 function updUndo() { $('#btnUndo').disabled = H.i <= 0; $('#btnRedo').disabled = H.i >= H.stack.length - 1; }
-function persist() { LS.set('encadreur.v1', { frame: S.frame, layers: S.layers, exp: S.exp, presetId: S.presetId, group: S.group }); }
+function persist() { LS.set('encadreur.v1', { frame: S.frame, layers: S.layers, exp: S.exp, presetId: S.presetId, group: S.group, adj: S.adj, fxGroup: S.fxGroup }); }
 $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
 
 // ---------- export ----------
@@ -1353,12 +1670,20 @@ async function renderOut(ph, img) {
   const jpeg = S.exp.fmt !== 'png';
   g.clearRect(0, 0, cv.width, cv.height);
   if (jpeg) { g.fillStyle = P.bg; g.fillRect(0, 0, cv.width, cv.height); }
+  // Filtres appliqués à la résolution de sortie (réduction préalable de qualité si besoin)
+  let src = img, tmp = null;
+  if (!isNeutral(S.adj)) {
+    const k = cv.width / L.W, tw = Math.max(1, Math.round(ph.w * k)), th = Math.max(1, Math.round(ph.h * k));
+    const base = tw < ph.w * 0.98 ? (tmp = scaled(img, Math.max(tw, th))) : img;
+    src = FX.render(base, blurOf(ph, ph.thumb), tw, th, S.adj, 'gl') || img;
+    if (tmp) { freeCanvas(tmp); tmp = null; }
+  }
   g.setTransform(cv.width / L.W, 0, 0, cv.height / L.H, 0, 0);
-  drawFrame(g, L, P, img, toks);
+  drawFrame(g, L, P, src, toks);
   drawLayers(g, L, S.layers, cv.width / L.W, toks);
   const blob = await new Promise(res => cv.toBlob(res, jpeg ? 'image/jpeg' : 'image/png', S.exp.q / 100));
   const out = { blob, w: cv.width, h: cv.height, name: outName(ph) };
-  freeCanvas(cv);
+  freeCanvas(cv); if (src !== img) FX.release();
   if (!blob) throw new Error('blob');
   return out;
 }
@@ -1462,6 +1787,156 @@ function fitStandaloneViewport() {
 }
 $('#btnExportTop').onclick = () => { if (!curPhoto()) { $('#filePhotos').click(); return; } exportPhotos(false); };
 
+// ===================== fxpanel.js (onglet Filtres) =====================
+const FX_SUBS = [['presets', 'Filtres'], ['light', 'Lumière'], ['color', 'Couleur'], ['hsl', 'TSL'], ['grade', 'Balance'], ['effects', 'Effets']];
+const RAINBOW = 'linear-gradient(90deg,hsl(0,85%,55%),hsl(60,85%,55%),hsl(120,85%,50%),hsl(180,85%,50%),hsl(240,85%,60%),hsl(300,85%,58%),hsl(360,85%,55%))';
+const BAND_HUE = [0, 30, 60, 120, 180, 225, 270, 315];
+const FX_SLIDERS = {
+  light: [['exp', 'Exposition', -4, 4, 0.05, 'ev'], ['con', 'Contraste'], ['hi', 'Hautes lumières'], ['sh', 'Ombres'], ['wh', 'Blancs'], ['bl', 'Noirs']],
+  color: [['temp', 'Température', -100, 100, 1, '', 'linear-gradient(90deg,#3b7bdc,#cfd6dc 50%,#f0b23a)'],
+    ['tint', 'Teinte', -100, 100, 1, '', 'linear-gradient(90deg,#3fae5a,#cfd6dc 50%,#d34fb2)'], ['vib', 'Vibrance'], ['sat', 'Saturation']],
+  effects: [['clar', 'Clarté'], ['dehaze', 'Correction du voile'], ['sharp', 'Netteté', 0, 100], ['glow', 'Halo lumineux', 0, 100], ['fade', 'Fondu (noirs mats)', 0, 100],
+    ['vig', 'Vignettage'], ['vigSize', 'Taille du vignettage', 0, 100], ['vigFeather', 'Contour progressif', 0, 100], ['grain', 'Grain', 0, 100], ['grainSize', 'Taille du grain', 0, 100]],
+};
+let myFx = LS.get('encadreur.myfx', []), _fxWarned = false;
+
+// ---------- sources filtrées (aperçu, miniatures) ----------
+function fxWarn() { if (!_fxWarned) { _fxWarned = true; toast('Les filtres demandent WebGL, indisponible sur ce navigateur.'); } }
+function fxSrc(ph) {
+  if (isNeutral(S.adj)) return ph.prev;
+  const key = JSON.stringify(S.adj);
+  if (ph.fxKey === key && ph.fxCv) return ph.fxCv;
+  const out = FX.render(ph.prev, blurOf(ph, ph.thumb), ph.prev.width, ph.prev.height, S.adj, ph.fxCv);
+  if (!out) { fxWarn(); return ph.prev; }
+  out.__k = uid(); ph.fxCv = out; ph.fxKey = key; return out;
+}
+function fxSmall(owner, src, A) {
+  if (isNeutral(A)) return src;
+  const key = JSON.stringify(A);
+  if (owner.__fxk === key && owner.__fx) return owner.__fx;
+  const out = FX.render(src, blurOf(owner, src), src.width, src.height, A, owner.__fx);
+  if (!out) return src;
+  out.__k = uid(); owner.__fx = out; owner.__fxk = key; return out;
+}
+function fxTile(A) {
+  const ph = curPhoto(), src = ph ? ph.thumb : demoSrc(), owner = ph || src;
+  const small = owner.__ts || (owner.__ts = scaled(src, 150));
+  if (isNeutral(A)) { const c = mkCanvas(small.width, small.height); c.getContext('2d').drawImage(small, 0, 0); return c; }
+  return FX.render(small, blurOf(owner, src), small.width, small.height, A) || small;
+}
+function fxChanged() { invalidate(); }
+
+// ---------- interface ----------
+function renderFx() {
+  const st = $('#fxSubtabs');
+  st.innerHTML = FX_SUBS.map(([k, n]) => `<button data-sub="${k}" class="${k === S.fxSub ? 'on' : ''}">${n}</button>`).join('');
+  st.querySelectorAll('button').forEach(b => b.onclick = () => { S.fxSub = b.dataset.sub; renderFx(); });
+  const box = $('#fxBody'); box.innerHTML = '';
+  if (S.fxSub === 'presets') fxPresetsUI(box);
+  else if (S.fxSub === 'hsl') fxHslUI(box);
+  else if (S.fxSub === 'grade') fxGradeUI(box);
+  else {
+    if (S.fxSub === 'color') fxToggle(box, 'Noir et blanc', () => S.adj.bw, v => { S.adj.bw = v; });
+    FX_SLIDERS[S.fxSub].forEach(([k, l, mn = -100, mx = 100, step = 1, kind = '', trk = '']) =>
+      fxRange(box, l, () => S.adj[k], v => { S.adj[k] = v; }, mn, mx, step, kind, ADJ0[k], trk));
+    fxResetBtn(box, 'Réinitialiser', () => FX_SLIDERS[S.fxSub].forEach(([k]) => { S.adj[k] = ADJ0[k]; }));
+  }
+}
+function fxRange(box, label, get, set, min, max, step, kind = '', neutral = 0, trk = '') {
+  const d = document.createElement('div'); d.className = 'ctl';
+  const fmt = v => kind === 'ev' ? (v > 0 ? '+' : '') + fmtNum(Math.round(v * 100) / 100) + ' EV' : kind === 'deg' ? Math.round(v) + '°' : (min < 0 && v > 0 ? '+' : '') + Math.round(v);
+  d.innerHTML = `<div class="ctl-h"><label>${label}</label><output title="Double-clic : réinitialiser">${fmt(get())}</output></div>
+    <input type="range" min="${min}" max="${max}" step="${step}" value="${get()}" class="${trk ? 'trk' : min < 0 ? 'bip' : ''}" ${trk ? `style="--trk:${trk}"` : ''}>`;
+  const inp = d.querySelector('input'), out = d.querySelector('output'); setFill(inp);
+  const upd = v => { set(v); out.textContent = fmt(v); setFill(inp); fxChanged(); };
+  inp.oninput = () => upd(+inp.value);
+  inp.onchange = () => commit();
+  out.ondblclick = () => { inp.value = neutral; upd(neutral); commit(); };
+  box.appendChild(d); return d;
+}
+function fxToggle(box, label, get, set) {
+  const d = document.createElement('div'); d.className = 'ctl';
+  d.innerHTML = `<label class="switch"><span>${label}</span><input type="checkbox" ${get() ? 'checked' : ''}></label>`;
+  d.querySelector('input').onchange = e => { set(e.target.checked); fxChanged(); commit(); };
+  box.appendChild(d);
+}
+function fxResetBtn(box, label, fn) {
+  const b = document.createElement('button'); b.className = 'btn sec wide'; b.style.marginTop = '10px'; b.textContent = label;
+  b.onclick = () => { fn(); fxChanged(); commit(); renderFx(); };
+  box.appendChild(b);
+}
+function fxPresetsUI(box) {
+  box.insertAdjacentHTML('beforeend', `<div class="chips">${FX_GROUPS.map(([k, n]) => `<button class="chip ${S.fxGroup === k ? 'on' : ''}" data-g="${k}">${n}</button>`).join('')}</div><div class="hscroll" id="fxTiles"></div>`);
+  box.querySelectorAll('.chip').forEach(b => b.onclick = () => { S.fxGroup = b.dataset.g; persist(); renderFx(); });
+  const tiles = $('#fxTiles', box), mine = S.fxGroup === 'mine';
+  const add = (id, name, A, onDel) => {
+    const b = document.createElement('button'); b.className = 'tile' + ((S.adj.fxId || '') === id && (id || isNeutral(S.adj)) ? ' on' : ''); b.dataset.id = id;
+    const th = document.createElement('div'); th.className = 'th'; th.appendChild(fxTile(A)); b.appendChild(th);
+    b.insertAdjacentHTML('beforeend', `<span>${esc(name)}</span>`);
+    if (onDel) { const x = document.createElement('span'); x.className = 'del'; x.textContent = '✕'; x.onclick = e => { e.stopPropagation(); onDel(); }; b.appendChild(x); }
+    b.onclick = () => { S.adj = normAdj(A); S.adj.fxId = id; S.adj.amount = 100; commit(); fxChanged(); renderFx(); };
+    tiles.appendChild(b);
+  };
+  if (mine) {
+    const s = document.createElement('button'); s.className = 'tile add'; s.innerHTML = '<div class="th">+</div><span>Enregistrer mon filtre</span>'; s.onclick = saveMyFx; tiles.appendChild(s);
+    if (!myFx.length) tiles.insertAdjacentHTML('beforeend', '<p class="note" style="align-self:center;max-width:230px;margin:0">Réglez la photo (Lumière, Couleur, TSL…) puis enregistrez le résultat comme filtre réutilisable.</p>');
+    myFx.forEach(f => add(f.id, f.n, f.a, () => { if (confirm(`Supprimer le filtre « ${f.n} » ?`)) { myFx = myFx.filter(x => x !== f); LS.set('encadreur.myfx', myFx); renderFx(); } }));
+  } else {
+    add('', 'Original', ADJ0);
+    FX_PRESETS.filter(p => p.g === S.fxGroup).forEach(p => add(p.id, p.n, fxAdj(p)));
+  }
+  fxRange(box, 'Intensité du filtre', () => S.adj.amount, v => { S.adj.amount = v; }, 0, 100, 1, '', 100);
+  const row = document.createElement('div'); row.className = 'row-btns';
+  row.innerHTML = '<button class="btn sec" data-a="reset">Tout réinitialiser</button><button class="btn sec" data-a="save">Enregistrer mon filtre</button>';
+  row.querySelector('[data-a=reset]').onclick = () => { S.adj = normAdj({}); commit(); fxChanged(); renderFx(); };
+  row.querySelector('[data-a=save]').onclick = saveMyFx;
+  box.appendChild(row);
+  setTimeout(() => { const on = $('#fxTiles .tile.on'); if (on && on.scrollIntoView) on.scrollIntoView({ inline: 'center', block: 'nearest' }); });
+}
+function saveMyFx() {
+  if (isNeutral(S.adj)) { toast('Réglez d’abord la photo (ou choisissez un filtre)'); return; }
+  const name = (prompt('Nom du filtre :', `Mon filtre ${myFx.length + 1}`) || '').trim(); if (!name) return;
+  const f = { id: 'my-' + uid(), n: name.slice(0, 30), a: cloneAdj(S.adj) }; f.a.fxId = f.id;
+  myFx.push(f); LS.set('encadreur.myfx', myFx); S.adj.fxId = f.id; S.fxGroup = 'mine'; commit(); renderFx(); toast('Filtre enregistré');
+}
+function fxHslUI(box) {
+  const H = S.adj.hsl;
+  if (S.adj.bw) {
+    box.insertAdjacentHTML('beforeend', '<div class="note" style="margin:4px 0 6px">Mode noir et blanc : réglez la luminosité de gris de chaque couleur d’origine.</div>');
+    BANDS.forEach(([, name, col], i) => fxRange(box, `<i class="dotlbl" style="--c:${col}"></i>${name}`, () => H[i][2], v => { H[i][2] = v; }, -100, 100, 1));
+    fxResetBtn(box, 'Réinitialiser le mélange', () => H.forEach(b => { b[2] = 0; }));
+    return;
+  }
+  const i = S.hslBand, c = BAND_HUE[i];
+  const dots = document.createElement('div'); dots.className = 'dots';
+  dots.innerHTML = BANDS.map(([, n, col], j) => `<button class="dot ${j === i ? 'on' : ''} ${H[j].some(v => v) ? 'mod' : ''}" style="--c:${col}" title="${n}" aria-label="${n}"></button>`).join('');
+  dots.querySelectorAll('.dot').forEach((b, j) => b.onclick = () => { S.hslBand = j; renderFx(); });
+  box.appendChild(dots);
+  box.insertAdjacentHTML('beforeend', `<div class="sec-h" style="margin-top:10px">Couleur sélective · ${BANDS[i][1]}</div>`);
+  fxRange(box, 'Teinte', () => H[i][0], v => { H[i][0] = v; }, -100, 100, 1, '', 0, `linear-gradient(90deg,hsl(${c - 30},80%,55%),hsl(${c},80%,55%),hsl(${c + 30},80%,55%))`);
+  fxRange(box, 'Saturation', () => H[i][1], v => { H[i][1] = v; }, -100, 100, 1, '', 0, `linear-gradient(90deg,hsl(${c},0%,55%),hsl(${c},90%,55%))`);
+  fxRange(box, 'Luminance', () => H[i][2], v => { H[i][2] = v; }, -100, 100, 1, '', 0, `linear-gradient(90deg,hsl(${c},70%,18%),hsl(${c},70%,82%))`);
+  const row = document.createElement('div'); row.className = 'row-btns';
+  row.innerHTML = `<button class="btn sec" data-a="one">Réinitialiser ${BANDS[i][1].toLowerCase()}</button><button class="btn sec" data-a="all">Tout le TSL</button>`;
+  row.querySelector('[data-a=one]').onclick = () => { H[i] = [0, 0, 0]; fxChanged(); commit(); renderFx(); };
+  row.querySelector('[data-a=all]').onclick = () => { S.adj.hsl = normAdj({}).hsl; fxChanged(); commit(); renderFx(); };
+  box.appendChild(row);
+}
+function fxGradeUI(box) {
+  const G = S.adj.grade, Z = [['sh', 'Ombres'], ['mid', 'Tons moyens'], ['hi', 'Hautes lumières']];
+  box.insertAdjacentHTML('beforeend', '<div class="sec-h" style="margin:2px 0 8px">Balance des couleurs (étalonnage)</div>');
+  const seg = document.createElement('div'); seg.className = 'seg'; seg.style.marginBottom = '6px';
+  seg.innerHTML = Z.map(([z, n]) => { const g = G[z]; return `<button data-z="${z}" class="${S.gradeZone === z ? 'on' : ''}"><i class="dotlbl" style="--c:hsl(${g[0]},${Math.max(g[1], 0)}%,55%)"></i>${n}</button>`; }).join('');
+  seg.querySelectorAll('button').forEach(b => b.onclick = () => { S.gradeZone = b.dataset.z; renderFx(); });
+  box.appendChild(seg);
+  const g = G[S.gradeZone], swatch = () => seg.querySelector(`[data-z="${S.gradeZone}"] .dotlbl`).style.setProperty('--c', `hsl(${g[0]},${g[1]}%,55%)`);
+  fxRange(box, 'Teinte', () => g[0], v => { g[0] = v; swatch(); }, 0, 360, 1, 'deg', ADJ0.grade[S.gradeZone][0], RAINBOW);
+  fxRange(box, 'Saturation', () => g[1], v => { g[1] = v; swatch(); }, 0, 100, 1, '', 0);
+  fxRange(box, 'Luminance', () => g[2], v => { g[2] = v; }, -100, 100, 1, '', 0);
+  fxRange(box, 'Balance (ombres ↔ hautes lumières)', () => G.bal, v => { G.bal = v; }, -100, 100, 1, '', 0);
+  fxResetBtn(box, 'Réinitialiser la balance des couleurs', () => { S.adj.grade = cloneAdj(ADJ0.grade); });
+}
+
 // ===================== panels.js (interface des onglets) =====================
 const ICON = {
   eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
@@ -1540,12 +2015,12 @@ function setTab(t) {
   $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $$('.pane').forEach(p => p.classList.toggle('on', p.id === 'pane-' + t));
   $('.panel').classList.toggle('compact', t === 'frames');
-  if (t === 'frames') renderPresets(); if (t === 'adjust') renderAdjust(); if (t === 'sign') renderSign(); if (t === 'export') renderExport();
+  if (t === 'fx') renderFx(); if (t === 'frames') renderPresets(); if (t === 'adjust') renderAdjust(); if (t === 'sign') renderSign(); if (t === 'export') renderExport();
   invalidate();
 }
 $$('#nav button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 function refreshAll() {
-  markPreset(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'sign') renderSign(); if (S.tab === 'export') renderExport(); invalidate();
+  markPreset(); if (S.tab === 'fx') renderFx(); if (S.tab === 'adjust') renderAdjust(); if (S.tab === 'sign') renderSign(); if (S.tab === 'export') renderExport(); invalidate();
 }
 
 // ---------- couleurs ----------
@@ -1584,7 +2059,7 @@ function demoSrc() {
   return _demo = c;
 }
 function thumbFor(p, layers) {
-  const ph = curPhoto(), src = ph ? ph.thumb : demoSrc(), P = { ...DEF, ...p }, toks = toksOf(ph);
+  const ph = curPhoto(), raw = ph ? ph.thumb : demoSrc(), src = fxSmall(ph || raw, raw, S.adj), P = { ...DEF, ...p }, toks = toksOf(ph);
   const L = layoutFor(src.width, src.height, P), s = 140 / Math.max(L.W, L.H);
   const c = mkCanvas(L.W * s, L.H * s), g = ctx2d(c);
   g.setTransform(c.width / L.W, 0, 0, c.height / L.H, 0, 0);
@@ -1599,7 +2074,7 @@ function tileFor(id, name, p, layers, onPick, onDel) {
   b.onclick = onPick; return b;
 }
 function renderPresets() {
-  const ph = curPhoto(), key = (ph ? ph.id : '-') + S.group + S.styles.map(s => s.id).join() + sigVersion;
+  const ph = curPhoto(), key = (ph ? ph.id : '-') + S.group + S.styles.map(s => s.id).join() + sigVersion + adjKey(S.adj);
   if (key === presetsKey && $('#presets').children.length) { markPreset(); return; }
   presetsKey = key;
   const box = $('#presets'); box.innerHTML = '';
@@ -1619,13 +2094,14 @@ function applyPreset(p) {
 async function loadStyles() { S.styles = (await DB.all('styles')).sort((a, b) => a.created - b.created); }
 async function saveStyle() {
   const name = (prompt('Nom du style :', `Mon style ${S.styles.length + 1}`) || '').trim(); if (!name) return;
-  const st = { id: uid(), name: name.slice(0, 30), frame: JSON.parse(JSON.stringify(S.frame)), layers: JSON.parse(JSON.stringify(S.layers)), created: Date.now() };
+  const st = { id: uid(), name: name.slice(0, 30), frame: JSON.parse(JSON.stringify(S.frame)), layers: JSON.parse(JSON.stringify(S.layers)), adj: cloneAdj(S.adj), created: Date.now() };
   S.styles.push(st);
   try { await DB.put('styles', st); } catch (e) { toast('Style non mémorisé (stockage indisponible)'); }
   S.presetId = 'st:' + st.id; renderPresets(); persist(); toast('Style enregistré');
 }
 function applyStyle(st) {
   S.frame = { ...DEF, ...JSON.parse(JSON.stringify(st.frame)) };
+  if (st.adj) S.adj = normAdj(st.adj);
   S.layers = JSON.parse(JSON.stringify(st.layers || [])).filter(l => l.type !== 'img' || SIGS.has(l.sig));
   S.sel = null; S.presetId = 'st:' + st.id; commit(); refreshAll();
 }
@@ -1907,6 +2383,8 @@ function renderExport() {
     if (saved.exp) S.exp = { ...S.exp, ...saved.exp };
     if (saved.presetId !== undefined) S.presetId = saved.presetId;
     if (saved.group) S.group = saved.group;
+    if (saved.adj) S.adj = normAdj(saved.adj);
+    if (saved.fxGroup) S.fxGroup = saved.fxGroup;
   }
   await Promise.all([loadSigs(), loadStyles()]);
   S.layers = S.layers.filter(l => l.type !== 'img' || SIGS.has(l.sig));

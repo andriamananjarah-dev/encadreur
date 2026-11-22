@@ -3,6 +3,8 @@
 Petite application web (100 % locale, hors ligne, installable) pour ajouter des cadres personnalisables et votre signature à vos photos, puis les exporter en JPEG ou PNG. Aucune image n'est envoyée sur Internet : tout est calculé dans le navigateur.
 
 ## Ce qu'elle fait
+- **Filtres façon Lightroom** : 51 filtres en 9 familles (Portrait, Cinéma, Paysage, Street, Urbain, Campagne, Vintage, Noir & blanc, Mariage), avec un curseur d'intensité, plus vos propres filtres enregistrés.
+- **Réglages photo** : Lumière (exposition, contraste, hautes lumières, ombres, blancs, noirs) ; Couleur (température, teinte, vibrance, saturation, noir et blanc) ; **TSL / couleur sélective** (teinte, saturation et luminance pour 8 couleurs, ou mélange N&B) ; **Balance des couleurs** (ombres, tons moyens, hautes lumières + balance) ; Effets (clarté, correction du voile, netteté, halo, fondu, vignettage, grain). Calcul sur la carte graphique (WebGL) : aperçu en direct, export en pleine définition.
 - **36 préréglages** : Simple (bordures, ombre portée, polaroid, carré / Insta 4:5), Galerie (cadre noir, noyer, chêne, blanc, doré, alu, murs colorés, tirage suspendu à pinces), Infos (bandeau façon appareil photo avec les données EXIF), Flou (fond flouté, story 9:16), Pellicule (35 mm).
 - **Tout est réglable** : format de sortie (libre, 1:1, 4:5, 9:16…), marges, bordures, épaisseur / matière / couleur du cadre, passe-partout, fond (couleur, texture, éclairage), ombre (intensité, douceur, distance, direction), textes et légendes avec les données de la photo ({appareil}, {reglages}, {date}…). Les couleurs dominantes de la photo sont proposées automatiquement.
 - **Signatures** : import PNG ou JPG (mémorisées sur l'appareil), suppression du fond blanc ou noir, recoloration, **17 modes de fusion façon Photoshop** (Produit, Superposition, Incrustation, Lumière tamisée…), opacité, rotation, ombre, 9 positions ou glisser / pincer directement sur l'aperçu. Textes libres aussi.
@@ -27,7 +29,7 @@ Pour enregistrer une image exportée dans Photos : **Enregistrer / Partager** �
 - `index.html` fonctionne aussi tout seul, ouvert directement depuis l'ordinateur (sans le mode hors ligne).
 
 ## Mettre à jour
-Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.0.2'` → `v1.0.3`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Remplacez `index.html`, puis changez le numéro dans `sw.js` (`const CACHE = 'encadreur-v1.1.0'` → `v1.1.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
 Sur l'iPhone, fermez complètement l'app (balayez sa carte vers le haut), puis rouvrez-la avec une connexion : la nouvelle version se charge.
 Pour renommer l'app : modifiez `name` / `short_name` dans `manifest.webmanifest` et la balise `<title>` de `index.html`.
 
